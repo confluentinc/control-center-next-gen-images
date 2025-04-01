@@ -21,12 +21,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.confluent.control-center-images</groupId>
-        <artifactId>control-center-images-parent</artifactId>
+        <groupId>io.confluent.control-center-images-next-gen</groupId>
+        <artifactId>control-center-images-parent-next-gen</artifactId>
         <version>8.0.0-0</version>
     </parent>
 
-    <groupId>io.confluent.control-center-images</groupId>
+    <groupId>io.confluent.control-center-images-next-gen</groupId>
     <artifactId>cp-enterprise-alertmanager</artifactId>
     <name>Control Center AlertManager Image</name>
 

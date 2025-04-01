@@ -25,8 +25,8 @@
         <version>[8.0.0-0, 8.0.1-0)</version>
     </parent>
 
-    <groupId>io.confluent.control-center-images</groupId>
-    <artifactId>control-center-images-parent</artifactId>
+    <groupId>io.confluent.control-center-images-next-gen</groupId>
+    <artifactId>control-center-images-parent-next-gen</artifactId>
     <packaging>pom</packaging>
     <name>Control Center Docker Images</name>
     <description>Build files for Confluent's control center Docker images</description>
