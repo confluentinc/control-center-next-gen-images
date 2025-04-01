@@ -45,7 +45,7 @@
                 <configuration>
                     <buildArgs>
                         <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
-                        <ARCH>${arch}</ARCH>
+                        <ARCH>${arch.type}</ARCH>
                     </buildArgs>
                 </configuration>
             </plugin>
@@ -55,8 +55,9 @@
     <properties>
         <component.name>control-center</component.name>
         <io.confluent.control-center-images.version>8.0.0-0</io.confluent.control-center-images.version>
-        <arch>arm64</arch>
-        <!--  This is a placeholder for the architecture of the image that we will need from input -->
+        <arch.type>.arm64</arch.type>
+        <!--  This is a placeholder for the architecture of the image that we will need from input
+         and the input will come in mvn command from semaphore.yml file -->
         <docker.file>Dockerfile.ubi9</docker.file>
     </properties>
 </project>
