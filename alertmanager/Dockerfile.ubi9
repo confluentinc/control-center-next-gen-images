@@ -86,7 +86,7 @@ COPY --from=builder /usr/libexec/confluent-control-center/linux_$ARCH/alertmanag
 COPY --from=builder /etc/confluent-control-center/alertmanager-generated.yml /etc/alertmanager/alertmanager-generated.yml
 
 
-RUN for file in bin/alertmanager/alertmanager*; do mv "$file" bin/alertmanager/alertmanager; done
+RUN for file in /bin/alertmanager/alertmanager*; do mv "$file" /bin/alertmanager/alertmanager; done
 
 EXPOSE 9093
 

@@ -32,8 +32,10 @@
     <description>Build files for Confluent's control center Docker images</description>
     <version>8.0.0-0</version>
 
-    <modules>
+   <modules>
         <module>control-center</module>
+        <module>prometheus</module>
+        <module>alertmanager</module>
     </modules>
     <build>
         <plugins>
