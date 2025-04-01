@@ -25,15 +25,17 @@
         <version>[8.0.0-0, 8.0.1-0)</version>
     </parent>
 
-    <groupId>io.confluent.control-center-images</groupId>
-    <artifactId>control-center-images-parent</artifactId>
+    <groupId>io.confluent.control-center-images-next-gen</groupId>
+    <artifactId>control-center-images-parent-next-gen</artifactId>
     <packaging>pom</packaging>
     <name>Control Center Docker Images</name>
     <description>Build files for Confluent's control center Docker images</description>
     <version>8.0.0-0</version>
 
-    <modules>
+   <modules>
         <module>control-center</module>
+        <module>prometheus</module>
+        <module>alertmanager</module>
     </modules>
     <build>
         <plugins>
@@ -43,7 +45,7 @@
                 <configuration>
                     <buildArgs>
                         <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
-                        <ARCH>${arch}</ARCH>
+                        <ARCH>${arch.type}</ARCH>
                     </buildArgs>
                 </configuration>
             </plugin>
@@ -53,8 +55,9 @@
     <properties>
         <component.name>control-center</component.name>
         <io.confluent.control-center-images.version>8.0.0-0</io.confluent.control-center-images.version>
-        <arch>arm64</arch>
-        <!--  This is a placeholder for the architecture of the image that we will need from input -->
+        <arch.type>.arm64</arch.type>
+        <!--  This is a placeholder for the architecture of the image that we will need from input
+         and the input will come in mvn command from semaphore.yml file -->
         <docker.file>Dockerfile.ubi9</docker.file>
     </properties>
 </project>

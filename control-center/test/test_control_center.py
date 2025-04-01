@@ -6,7 +6,7 @@ import json
 
 import confluent.docker_utils as utils
 
-IMAGE_NAME = 'confluentinc/cp-enterprise-control-center'
+IMAGE_NAME = 'confluentinc/cp-enterprise-control-center-next-gen'
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 FIXTURES_DIR = os.path.join(CURRENT_DIR, "fixtures")
 KAFKA_READY = "bash -c 'cub kafka-ready {brokers} 40 -z $KAFKA_ZOOKEEPER_CONNECT && echo PASS || echo FAIL'"

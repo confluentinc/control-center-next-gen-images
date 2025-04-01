@@ -82,11 +82,16 @@ LABEL io.confluent.docker.git.repo="confluentinc/control-center-images"
 RUN mkdir /etc/alertmanager && \
     mkdir /bin/alertmanager
 
-COPY --from=builder /usr/libexec/confluent-control-center/linux_$ARCH/alertmanager/ /bin/alertmanager
+# Remove the leading dot from the ARCH variable
+RUN ARCH_CLEANED=${ARCH#.} && \
+    echo "Cleaned ARCH: $ARCH_CLEANED"
+
+# Use the cleaned ARCH variable in subsequent commands
+COPY --from=builder /usr/libexec/confluent-control-center/linux_$ARCH_CLEANED/alertmanager/ /bin/alertmanager
 COPY --from=builder /etc/confluent-control-center/alertmanager-generated.yml /etc/alertmanager/alertmanager-generated.yml
 
 
-RUN for file in bin/alertmanager/alertmanager*; do mv "$file" bin/alertmanager/alertmanager; done
+RUN for file in /bin/alertmanager/alertmanager*; do mv "$file" /bin/alertmanager/alertmanager; done
 
 EXPOSE 9093
 
