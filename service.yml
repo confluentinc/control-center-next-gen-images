@@ -1,11 +1,67 @@
-name: control-center-next-gen-images
-lang: unknown
-lang_version: unknown
+name: control-center-images-next-gen
+lang: python
+lang_version: 3.12
 git:
   enable: true
 codeowners:
   enable: true
-renovatebot:
+semaphore:
   enable: true
-  automerge:
-    enable: true
+  pipeline_type: cp-dockerfile
+  docker_repos: ["confluentinc/cp-enterprise-control-center-next-gen", "confluentinc/cp-enterprise-prometheus", "confluentinc/cp-enterprise-alertmanager"]
+  maven_phase: 'package'
+  maven_skip_deploy: true
+  build_arm: true
+  sign_images: true
+  os_types: ["ubi9"]
+  nano_version: true
+  use_packages: true
+  cp_images: true
+  push_latest: true
+  tasks:
+    - name: cp-dockerfile-build
+      branch: master
+      pipeline_file: .semaphore/cp_dockerfile_build.yml
+      parameters:
+        - name: CONFLUENT_VERSION
+          required: true
+        - name: PACKAGES_URL
+          required: true
+        - name: PACKAGES_MAVEN_URL
+          required: true
+        - name: PACKAGING_BUILD_NUMBER
+          required: true
+        - name: ALLOW_UNSIGNED
+          required: true
+          default_value: 'False'
+          options:
+            - 'True'
+            - 'False'
+        - name: CONFLUENT_DEB_VERSION
+          required: true
+          default_value: '1'
+    - name: cp-dockerfile-promote
+      branch: master
+      pipeline_file: .semaphore/cp_dockerfile_promote.yml
+      parameters:
+        - name: CONFLUENT_VERSION
+          required: true
+        - name: IMAGE_REVISION
+          required: true
+          default_value: '1'
+        - name: UPDATE_LATEST_TAG
+          required: true
+        - name: PACKAGING_BUILD_NUMBER
+          required: true
+        - name: PROMOTE_OS_TYPE
+          required: true
+          options:
+            - 'deb'
+            - 'ubi'
+code_artifact:
+  enable: true
+  package_paths:
+    - maven-snapshots/maven/io.confluent/control-center-images-next-gen
+    - maven-snapshots/maven/io.confluent/control-center-images-parent-next-gen
+    - maven-snapshots/maven/io.confluent.control-center-images/control-center-images-parent-next-gen
+    - maven-snapshots/maven/io.confluent.control-center-images/cp-enterprise-control-center-next-gen
