@@ -35,7 +35,7 @@ global_job_config:
       - pip install confluent-release-tools
       - aws sts get-caller-identity
       - export PACKAGING_BUCKET="s3://dev-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/$BRANCH_TAG/"
-      - export LATEST_PACKAGING_BUILD_NUMBER=$(aws s3 ls $PACKAGING_BUCKET --no-paginate --debug | grep 'PRE' | awk '{print $NF}' | awk '{print substr($1, 1, length($1)-1)}' | sort -n | tail -n 1)
+      - export LATEST_PACKAGING_BUILD_NUMBER=16 #$(aws s3 ls $PACKAGING_BUCKET --no-paginate --debug | grep 'PRE' | awk '{print $NF}' | awk '{print substr($1, 1, length($1)-1)}' | sort -n | tail -n 1)
       # Check if version is complete, otherwise use the previous version
       - (aws s3 ls $PACKAGING_BUCKET$LATEST_PACKAGING_BUILD_NUMBER/deb/ --debug && aws s3 ls $PACKAGING_BUCKET$LATEST_PACKAGING_BUILD_NUMBER/rpm/ --debug && aws s3 ls $PACKAGING_BUCKET$LATEST_PACKAGING_BUILD_NUMBER/archive/ --debug)
         || export LATEST_PACKAGING_BUILD_NUMBER=$(aws s3 ls $PACKAGING_BUCKET --no-paginate --debug | grep 'PRE' | awk '{print $NF}' | awk '{print substr($1, 1, length($1)-1)}' | sort -n | tail -n 2 | head -n 1)
