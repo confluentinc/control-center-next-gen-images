@@ -57,7 +57,7 @@ FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MICRO_VERSION}
 WORKDIR /app
 USER root
 
-ARG ARCH
+ARG ARCH_TYPE
 # Update package list and install essential packages
 
 LABEL maintainer="partner-support@confluent.io"
@@ -76,15 +76,11 @@ LABEL io.confluent.docker.git.repo="confluentinc/control-center-images"
 RUN mkdir /etc/prometheus && \
     mkdir /bin/prometheus
 
-# Remove the leading dot from the ARCH variable
-RUN ARCH_CLEANED=${ARCH#.} && \
-    echo "Cleaned ARCH: $ARCH_CLEANED" \
-
-COPY --from=builder /usr/libexec/confluent-control-center/linux_$ARCH_CLEANED/prometheus/ /bin/prometheus/
+COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH_TYPE#.}/prometheus/ /bin/prometheus/
 COPY --from=builder /etc/confluent-control-center/prometheus-generated.yml /etc/prometheus/prometheus-generated.yml
 COPY --from=builder /etc/confluent-control-center/trigger_rules-generated.yml /etc/prometheus/
 COPY --from=builder /etc/confluent-control-center/recording_rules-generated.yml /etc/prometheus/
-RUN ls -la /bin/prometheus
+RUN ls -la /bin/prometheus/
 RUN for file in /bin/prometheus/prometheus*; do mv "$file" /bin/prometheus/prometheus; done
 
 EXPOSE 9090
