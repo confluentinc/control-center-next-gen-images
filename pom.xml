@@ -45,6 +45,7 @@
                 <configuration>
                     <buildArgs>
                         <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
+                        <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
                         <ARCH>${arch.type}</ARCH>
                     </buildArgs>
                 </configuration>

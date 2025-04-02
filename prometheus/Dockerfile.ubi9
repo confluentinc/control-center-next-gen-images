@@ -15,7 +15,7 @@
 
 ARG DOCKER_UPSTREAM_REGISTRY
 ARG DOCKER_UPSTREAM_TAG=ubi9-latest
-ARG UBI_MINIMAL_VERSION
+ARG UBI_MICRO_VERSION
 
 FROM ${DOCKER_UPSTREAM_REGISTRY}confluentinc/cp-base-java:${DOCKER_UPSTREAM_TAG} as builder
 
@@ -24,9 +24,10 @@ ARG ARTIFACT_ID
 ARG GIT_COMMIT
 
 
-ENV COMPONENT=control-center
+ENV COMPONENT=control-center-next-gen
+ENV OLD_COMPONENT_NAME=control-center
 ENV CONTROL_CENTER_DATA_DIR=/var/lib/confluent-${COMPONENT}
-ENV CONTROL_CENTER_CONFIG_DIR=/etc/confluent-${COMPONENT}
+ENV CONTROL_CENTER_CONFIG_DIR=/etc/confluent-${OLD_COMPONENT_NAME}
 
 ARG CONFLUENT_VERSION
 ARG CONFLUENT_PACKAGES_REPO
@@ -36,14 +37,7 @@ USER root
 
 RUN echo "===> Installing ${COMPONENT}..." \
     && rpm --import ${CONFLUENT_PACKAGES_REPO}/archive.key \
-    && printf "[Confluent.dist] \n\
-name=Confluent repository (dist) \n\
-baseurl=${CONFLUENT_PACKAGES_REPO}/7 \n\
-gpgcheck=1 \n\
-gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
-enabled=1 \n\
-\n\
-[Confluent] \n\
+    && printf "[Confluent] \n\
 name=Confluent repository \n\
 baseurl=${CONFLUENT_PACKAGES_REPO}/ \n\
 gpgcheck=1 \n\
@@ -59,7 +53,7 @@ enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && chown appuser:root -R "${CONTROL_CENTER_CONFIG_DIR}" \
     && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}"
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MINIMAL_VERSION}
+FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MICRO_VERSION}
 WORKDIR /app
 USER root
 
@@ -86,11 +80,11 @@ RUN mkdir /etc/prometheus && \
 RUN ARCH_CLEANED=${ARCH#.} && \
     echo "Cleaned ARCH: $ARCH_CLEANED" \
 
-COPY --from=builder /usr/libexec/confluent-control-center/linux_$ARCH_CLEANED/prometheus/ /bin/prometheus
+COPY --from=builder /usr/libexec/confluent-control-center/linux_$ARCH_CLEANED/prometheus/ /bin/prometheus/
 COPY --from=builder /etc/confluent-control-center/prometheus-generated.yml /etc/prometheus/prometheus-generated.yml
 COPY --from=builder /etc/confluent-control-center/trigger_rules-generated.yml /etc/prometheus/
 COPY --from=builder /etc/confluent-control-center/recording_rules-generated.yml /etc/prometheus/
-
+RUN ls -la /bin/prometheus
 RUN for file in /bin/prometheus/prometheus*; do mv "$file" /bin/prometheus/prometheus; done
 
 EXPOSE 9090
