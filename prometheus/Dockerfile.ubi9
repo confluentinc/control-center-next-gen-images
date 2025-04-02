@@ -24,9 +24,9 @@ ARG ARTIFACT_ID
 ARG GIT_COMMIT
 
 
-ENV COMPONENT=control-center
+ENV COMPONENT=control-center-next-gen
 ENV CONTROL_CENTER_DATA_DIR=/var/lib/confluent-${COMPONENT}
-ENV CONTROL_CENTER_CONFIG_DIR=/etc/confluent-${COMPONENT}
+ENV CONTROL_CENTER_CONFIG_DIR=/etc/confluent-control-center
 
 ARG CONFLUENT_VERSION
 ARG CONFLUENT_PACKAGES_REPO
@@ -36,14 +36,7 @@ USER root
 
 RUN echo "===> Installing ${COMPONENT}..." \
     && rpm --import ${CONFLUENT_PACKAGES_REPO}/archive.key \
-    && printf "[Confluent.dist] \n\
-name=Confluent repository (dist) \n\
-baseurl=${CONFLUENT_PACKAGES_REPO}/7 \n\
-gpgcheck=1 \n\
-gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
-enabled=1 \n\
-\n\
-[Confluent] \n\
+    && printf "[Confluent] \n\
 name=Confluent repository \n\
 baseurl=${CONFLUENT_PACKAGES_REPO}/ \n\
 gpgcheck=1 \n\
