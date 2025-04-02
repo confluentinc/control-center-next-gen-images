@@ -15,7 +15,7 @@
 
 ARG DOCKER_UPSTREAM_REGISTRY
 ARG DOCKER_UPSTREAM_TAG=ubi9-latest
-ARG UBI_MINIMAL_VERSION
+ARG UBI_MICRO_VERSION
 
 FROM ${DOCKER_UPSTREAM_REGISTRY}confluentinc/cp-base-java:${DOCKER_UPSTREAM_TAG} as builder
 
@@ -24,8 +24,9 @@ ARG ARTIFACT_ID
 ARG GIT_COMMIT
 
 ENV COMPONENT=control-center-next-gen
+ENV OLD_COMPONENT_NAME=control-center
 ENV CONTROL_CENTER_DATA_DIR=/var/lib/confluent-${COMPONENT}
-ENV CONTROL_CENTER_CONFIG_DIR=/etc/confluent-control-center
+ENV CONTROL_CENTER_CONFIG_DIR=/etc/confluent-${OLD_COMPONENT_NAME}
 
 ARG CONFLUENT_VERSION
 ARG CONFLUENT_PACKAGES_REPO
@@ -51,7 +52,7 @@ enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && chown appuser:root -R "${CONTROL_CENTER_CONFIG_DIR}" \
     && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}"
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MINIMAL_VERSION}
+FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MICRO_VERSION}
 WORKDIR /app
 USER root
 
