@@ -60,7 +60,8 @@ global_job_config:
               fi
           fi
           # Overwrite maven global configuration
-          . vault-sem-get-secret maven-settings-cp-dockerfile
+          vault kv get -field settings v1/ci/kv/maven/semaphore_maven_c3_packaging_settings > template-settings.xml
+          mv ~/.m2/settings.xml ~/.m2/settings.xml.bak && envsubst < template-settings.xml > ~/.m2/settings.xml # Replacing maven settings with packaging specific settings
         else
           echo "This job is not a isHotfixJob or isRcJob (What we know how to handle) - and we don't know how to handle it"
         fi
