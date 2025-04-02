@@ -80,7 +80,7 @@ RUN mkdir /etc/prometheus && \
 RUN ARCH_CLEANED=${ARCH#.} && \
     echo "Cleaned ARCH: $ARCH_CLEANED" \
 
-COPY --from=builder /usr/libexec/confluent-control-center/linux_$ARCH_CLEANED/prometheus/ /bin/prometheus
+COPY --from=builder /usr/libexec/confluent-control-center/linux_$ARCH_CLEANED/prometheus/ /bin/prometheus/
 COPY --from=builder /etc/confluent-control-center/prometheus-generated.yml /etc/prometheus/prometheus-generated.yml
 COPY --from=builder /etc/confluent-control-center/trigger_rules-generated.yml /etc/prometheus/
 COPY --from=builder /etc/confluent-control-center/recording_rules-generated.yml /etc/prometheus/
