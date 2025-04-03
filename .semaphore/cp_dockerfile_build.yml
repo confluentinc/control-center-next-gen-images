@@ -68,9 +68,8 @@ global_job_config:
                   export MAVEN_PACKAGES_URL=$PACKAGES_MAVEN_URL
               fi
           fi
-          # Overwrite maven global configuration 
-          vault kv get -field settings v1/ci/kv/maven/semaphore_maven_c3_packaging_settings > template-settings.xml
-          mv ~/.m2/settings.xml ~/.m2/settings.xml.bak && envsubst < template-settings.xml > ~/.m2/settings.xml # Replacing maven settings with packaging specific settings
+          # Overwrite maven global configuration
+          . vault-sem-get-secret maven-settings-cp-dockerfile
         else
           echo "This job is not a isHotfixJob or isRcJob (What we know how to handle) - and we don't know how to handle it"
         fi
@@ -374,9 +373,11 @@ blocks:
         - name: Create Manifest and Maven Deploy
           commands:
             - export DOCKER_PROD_IMAGE_NAME=$DOCKER_PROD_REGISTRY${DOCKER_REPOS// / $DOCKER_PROD_REGISTRY}
+            - ci-tools ci-update-version
+            - ci-tools ci-push-tag
             - |-
               if [[ ! $IS_RELEASE && ! $IS_PREVIEW ]]; then
-                echo "maven deploy command"
+                mvn -Dmaven.wagon.http.retryHandler.count=3 --batch-mode -P jenkins,docker -DaltDeploymentRepository=confluent-codeartifact-internal::default::https://confluent-519856050701.d.codeartifact.us-west-2.amazonaws.com/maven/maven-snapshots/ -DrepositoryId=confluent-codeartifact-internal deploy -DskipTests -Ddocker.skip-build=true -Ddocker.skip-test=true  $MAVEN_EXTRA_ARGS
               fi
             # Create manifest
             - >-
