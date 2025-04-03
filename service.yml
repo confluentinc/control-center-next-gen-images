@@ -8,6 +8,7 @@ codeowners:
 semaphore:
   enable: true
   pipeline_type: cp-dockerfile
+  pipeline_enable: false
   docker_repos: ["confluentinc/cp-enterprise-control-center-next-gen", "confluentinc/cp-enterprise-prometheus", "confluentinc/cp-enterprise-alertmanager"]
   maven_phase: 'package'
   maven_skip_deploy: true
