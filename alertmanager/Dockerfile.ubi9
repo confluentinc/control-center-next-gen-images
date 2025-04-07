@@ -80,6 +80,8 @@ RUN mkdir /etc/alertmanager && \
 # Use the cleaned ARCH variable in subsequent commands
 COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/ /bin/alertmanager
 COPY --from=builder /etc/confluent-control-center/alertmanager-generated.yml /etc/alertmanager/alertmanager-generated.yml
+COPY --from=builder /usr/bin/alertmanager-start /usr/bin/alertmanager-start
+COPY --from=builder /usr/bin/alertmanager-stop /usr/bin/alertmanager-stop
 
 
 RUN for file in /bin/alertmanager/alertmanager*; do mv "$file" /bin/alertmanager/alertmanager; done
