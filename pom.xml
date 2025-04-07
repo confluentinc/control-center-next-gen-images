@@ -30,7 +30,7 @@
     <packaging>pom</packaging>
     <name>Control Center Docker Images</name>
     <description>Build files for Confluent's control center Docker images</description>
-    <version>8.0.0-0</version>
+    <version>2.0.0</version>
 
    <modules>
         <module>control-center</module>
@@ -55,7 +55,7 @@
 
     <properties>
         <component.name>control-center</component.name>
-        <io.confluent.control-center-next-gen-images.version>8.0.0-0</io.confluent.control-center-next-gen-images.version>
+        <io.confluent.control-center-next-gen-images.version>2.0.0</io.confluent.control-center-next-gen-images.version>
         <arch.type>.arm64</arch.type>
         <!--  This is a placeholder for the architecture of the image that we will need from input
          and the input will come in mvn command from semaphore.yml file -->
