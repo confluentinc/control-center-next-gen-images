@@ -1,64 +1,65 @@
-{{/* ********************************************************************************************** */}}
-{{/* IMPORTANT TO NOTE: These properties are required properties, and they not only have special */}}
-{{/* translations but also have a list of valid translations. */}}
-{{/* ********************************************************************************************** */}}
-{{ $required_props := createStringSliceMap }}
-{{ $required_props = setStringSliceMapValue $required_props "bootstrap.servers" (stringSlice "CONTROL_CENTER_BOOTSTRAP_SERVERS") }}
-{{ $required_props = setStringSliceMapValue $required_props "zookeeper.connect" (stringSlice "CONTROL_CENTER_ZOOKEEPER_CONNECT") }}
-{{ $required_props = setStringSliceMapValue $required_props "confluent.controlcenter.data.dir" (stringSlice "CONTROL_CENTER_DATA_DIR") }}
-{{ $required_props = setStringSliceMapValue $required_props "confluent.monitoring.interceptor.topic.replication" (stringSlice "CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION" "CONTROL_CENTER_REPLICATION_FACTOR") }}
-{{ $required_props = setStringSliceMapValue $required_props "confluent.controlcenter.internal.topics.replication" (stringSlice "CONTROL_CENTER_INTERNAL_TOPICS_REPLICATION" "CONTROL_CENTER_REPLICATION_FACTOR") }}
-{{ $required_props = setStringSliceMapValue $required_props "confluent.controlcenter.command.topic.replication" (stringSlice "CONTROL_CENTER_COMMAND_TOPIC_REPLICATION" "CONTROL_CENTER_REPLICATION_FACTOR") }}
-{{ $required_props = setStringSliceMapValue $required_props "confluent.metrics.topic.replication" (stringSlice "CONTROL_CENTER_METRICS_TOPIC_REPLICATION" "CONFLUENT_METRICS_TOPIC_REPLICATION" "CONTROL_CENTER_REPLICATION_FACTOR") }}
+{{- /* ********************************************************************************************** */ -}}
+{{- /* IMPORTANT TO NOTE: These properties are required properties, and they not only have special */ -}}
+{{- /* translations but also have a list of valid translations. */ -}}
+{{- /* ********************************************************************************************** */ -}}
+{{- $required_props := createStringSliceMap -}}
+{{- $required_props = setStringSliceMapValue $required_props "bootstrap.servers" (stringSlice "CONTROL_CENTER_BOOTSTRAP_SERVERS") -}}
+{{- $required_props = setStringSliceMapValue $required_props "zookeeper.connect" (stringSlice "CONTROL_CENTER_ZOOKEEPER_CONNECT") -}}
+{{- $required_props = setStringSliceMapValue $required_props "confluent.controlcenter.data.dir" (stringSlice "CONTROL_CENTER_DATA_DIR") -}}
+{{- $required_props = setStringSliceMapValue $required_props "confluent.monitoring.interceptor.topic.replication" (stringSlice "CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION" "CONTROL_CENTER_REPLICATION_FACTOR") -}}
+{{- $required_props = setStringSliceMapValue $required_props "confluent.controlcenter.internal.topics.replication" (stringSlice "CONTROL_CENTER_INTERNAL_TOPICS_REPLICATION" "CONTROL_CENTER_REPLICATION_FACTOR") -}}
+{{- $required_props = setStringSliceMapValue $required_props "confluent.controlcenter.command.topic.replication" (stringSlice "CONTROL_CENTER_COMMAND_TOPIC_REPLICATION" "CONTROL_CENTER_REPLICATION_FACTOR") -}}
+{{- $required_props = setStringSliceMapValue $required_props "confluent.metrics.topic.replication" (stringSlice "CONTROL_CENTER_METRICS_TOPIC_REPLICATION" "CONFLUENT_METRICS_TOPIC_REPLICATION" "CONTROL_CENTER_REPLICATION_FACTOR") -}}
 
-{{/* ********************************************************************************************** */}}
-{{/* IMPORTANT TO NOTE: These properties have uncommon prefixes. Though ideally C3 properties should */}}
-{{/* have the common prefix `confluent.controlcenter.`, which translates to `CONTROL_CENTER_`. */}}
-{{/* ********************************************************************************************** */}}
-{{ $special_props := createStringSliceMap }}
-{{ $special_props = setStringSliceMapValue $special_props "config.providers" (stringSlice "CONFIG_PROVIDERS") }}
-{{ $special_props = setStringSliceMapValue $special_props "config.providers.securepass.class" (stringSlice "CONFIG_PROVIDERS_SECUREPASS_CLASS") }}
-{{ $special_props = setStringSliceMapValue $special_props "confluent.license" (stringSlice "CONTROL_CENTER_LICENSE" "CONTROL_CENTER_CONFLUENT_LICENSE") }}
-{{ $special_props = setStringSliceMapValue $special_props "public.key.path" (stringSlice "PUBLIC_KEY_PATH") }}
+{{- /* ********************************************************************************************** */ -}}
+{{- /* IMPORTANT TO NOTE: These properties have uncommon prefixes. Though ideally C3 properties should */ -}}
+{{- /* have the common prefix `confluent.controlcenter.`, which translates to `CONTROL_CENTER_`. */ -}}
+{{- /* ********************************************************************************************** */ -}}
+{{- $special_props := createStringSliceMap -}}
+{{- $special_props = setStringSliceMapValue $special_props "config.providers" (stringSlice "CONFIG_PROVIDERS") -}}
+{{- $special_props = setStringSliceMapValue $special_props "config.providers.securepass.class" (stringSlice "CONFIG_PROVIDERS_SECUREPASS_CLASS") -}}
+{{- $special_props = setStringSliceMapValue $special_props "confluent.license" (stringSlice "CONTROL_CENTER_LICENSE" "CONTROL_CENTER_CONFLUENT_LICENSE") -}}
+{{- $special_props = setStringSliceMapValue $special_props "public.key.path" (stringSlice "PUBLIC_KEY_PATH") -}}
 
-{{/* Use the external setProperties function which is implemented in Go code */}}
-{{ $excludes := stringSlice }}
+{{- /* Use the external setProperties function which is implemented in Go code */ -}}
+{{- $excludes := stringSlice -}}
 
-{{/* Call setProperties for required_props */}}
-{{ $required_result := setProperties $required_props true $excludes }}
-{{ range $property, $value := $required_result }}
+
+{{- /* Call setProperties for required_props */ -}}
+{{- $required_result := setProperties $required_props true $excludes -}}
+{{- range $property, $value := $required_result -}}
 {{ $property }}={{ $value }}
-{{ end }}
+{{ end -}}
 
-{{/* Call setProperties for special_props */}}
-{{ $special_result := setProperties $special_props false $excludes }}
-{{ range $property, $value := $special_result }}
+{{- /* Call setProperties for special_props */ -}}
+{{- $special_result := setProperties $special_props false $excludes -}}
+{{- range $property, $value := $special_result -}}
 {{ $property }}={{ $value }}
-{{ end }}
+{{ end -}}
 
-{{ $monitoring_interceptor_result := envToProps "CONTROL_CENTER_MONITORING_INTERCEPTOR_" "confluent.monitoring.interceptor." $excludes }}
-{{ range $name, $value := $monitoring_interceptor_result }}
+{{- $monitoring_interceptor_result := envToProps "CONTROL_CENTER_MONITORING_INTERCEPTOR_" "confluent.monitoring.interceptor." $excludes nil -}}
+{{- range $name, $value := $monitoring_interceptor_result -}}
 {{ $name }}={{ $value }}
-{{ end }}
+{{ end -}}
 
-{{ $metadata_result := envToProps "CONFLUENT_METADATA_" "confluent.metadata." $excludes }}
-{{ range $name, $value := $metadata_result }}
+{{- $metadata_result := envToProps "CONFLUENT_METADATA_" "confluent.metadata." $excludes nil -}}
+{{- range $name, $value := $metadata_result -}}
 {{ $name }}={{ $value }}
-{{ end }}
+{{ end -}}
 
-{{ $support_result := envToProps "CONFLUENT_SUPPORT_" "confluent.support." $excludes }}
-{{ range $name, $value := $support_result }}
+{{- $support_result := envToProps "CONFLUENT_SUPPORT_" "confluent.support." $excludes nil -}}
+{{- range $name, $value := $support_result -}}
 {{ $name }}={{ $value }}
-{{ end }}
+{{ end -}}
 
-{{ $metrics_result := setPropertiesWithEnvToPropsWithTwoPrefixes "CONTROL_CENTER_METRICS_" "CONFLUENT_METRICS_" "confluent.metrics." $excludes }}
-{{ range $name, $value := $metrics_result }}
+{{- $metrics_result := setPropertiesWithEnvToPropsWithTwoPrefixes "CONTROL_CENTER_METRICS_" "CONFLUENT_METRICS_" "confluent.metrics." $excludes -}}
+{{- range $name, $value := $metrics_result -}}
 {{ $name }}={{ $value }}
-{{ end }}
+{{ end -}}
 
-{{ $skip_prop_prefix := stringSlice "confluent.controlcenter.metrics." "confluent.controlcenter.monitoring.interceptor." }}
-{{ $skip_props := stringSlice }}
-{{ $control_center_result := setPropertiesWithSkipPropCheck "CONTROL_CENTER_" "confluent.controlcenter." $excludes $skip_prop_prefix $skip_props }}
-{{ range $name, $value := $control_center_result }}
+{{- /* Skip properties that are already handled by required_props or would cause duplicates */ -}}
+{{- $skip_prop_prefix := stringSlice "confluent.controlcenter.metrics." "confluent.controlcenter.monitoring.interceptor." "confluent.controlcenter.bootstrap.servers" "confluent.controlcenter.zookeeper.connect" "confluent.controlcenter.replication.factor" "confluent.controlcenter.command.topic.replication" "confluent.controlcenter.internal.topics.replication" "confluent.controlcenter.metrics.topic.replication" -}}
+{{- $control_center_result := envToProps "CONTROL_CENTER_" "confluent.controlcenter." $excludes $skip_prop_prefix -}}
+{{- range $name, $value := $control_center_result -}}
 {{ $name }}={{ $value }}
-{{ end }}
+{{ end -}}
