@@ -73,33 +73,39 @@ ARG BUILD_NUMBER=-1
 LABEL io.confluent.docker.build.number=$BUILD_NUMBER
 LABEL io.confluent.docker.git.repo="confluentinc/control-center-images"
 
-RUN mkdir /etc/prometheus && \
-    mkdir /bin/prometheus
+RUN mkdir -p /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus && \
+    mkdir -p /etc/confluent-control-center
 
-COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/ /bin/prometheus/
-COPY --from=builder /etc/confluent-control-center/prometheus-generated.yml /etc/prometheus/prometheus-generated.yml
-COPY --from=builder /etc/confluent-control-center/trigger_rules-generated.yml /etc/prometheus/
-COPY --from=builder /etc/confluent-control-center/recording_rules-generated.yml /etc/prometheus/
+
+COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/ /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/
+COPY --from=builder /etc/confluent-control-center/prometheus-generated.yml /etc/confluent-control-center/prometheus-generated.yml
+COPY --from=builder /etc/confluent-control-center/trigger_rules-generated.yml /etc/confluent-control-center/
+COPY --from=builder /etc/confluent-control-center/recording_rules-generated.yml /etc/confluent-control-center/
 COPY --from=builder /usr/bin/prometheus-start /usr/bin/prometheus-start
 COPY --from=builder /usr/bin/prometheus-stop /usr/bin/prometheus-stop
 
-RUN for file in /bin/prometheus/prometheus*; do mv "$file" /bin/prometheus/prometheus; done
 
 EXPOSE 9090
 
-RUN chmod +x /bin/prometheus/prometheus
-WORKDIR /prometheus
+RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/prometheus-${ARCH#.}
+WORKDIR /usr/bin
 
 
 RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
     mkdir -p /home/appuser && \
     chown 1000:1000 /home/appuser
-#
-RUN chown -R 1000:1000 /etc/prometheus /prometheus
-USER appuser
-# Make the entrypoint script executable
 
-VOLUME     [ "/prometheus" ]
-ENTRYPOINT [ "/bin/prometheus/prometheus" ]
-CMD        [ "--config.file=/etc/prometheus/prometheus-generated.yml", \
-             "--storage.tsdb.path=/prometheus" ]
+ENV EXE_PATH="/usr/libexec/confluent-control-center"
+
+## Creating the default LOG Directory and data directory that we use in script so that when alertmanager
+## will run it can write data into tit.
+## Limitation : Customer can't change the log and data path to some other directory, but they should be able to mount a volume and write on it.
+## Security Practice used: Principle of least privilege
+RUN mkdir -p /var/lib/confluent/control-center/prometheus/data && \
+    mkdir -p /var/log/confluent/control-center && \
+    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data /var/log/confluent/control-center
+
+USER appuser
+
+VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
+ENTRYPOINT ["prometheus-start"]

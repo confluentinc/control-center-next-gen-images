@@ -73,36 +73,36 @@ LABEL io.confluent.docker.build.number=$BUILD_NUMBER
 LABEL io.confluent.docker.git.repo="confluentinc/control-center-images"
 
 
-RUN mkdir /etc/alertmanager && \
-    mkdir /bin/alertmanager
-
+RUN mkdir -p /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager && \
+    mkdir -p /etc/confluent-control-center
 
 # Use the cleaned ARCH variable in subsequent commands
-COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/ /bin/alertmanager
-COPY --from=builder /etc/confluent-control-center/alertmanager-generated.yml /etc/alertmanager/alertmanager-generated.yml
+COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/ /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/
+COPY --from=builder /etc/confluent-control-center/alertmanager-generated.yml /etc/confluent-control-center/alertmanager-generated.yml
 COPY --from=builder /usr/bin/alertmanager-start /usr/bin/alertmanager-start
 COPY --from=builder /usr/bin/alertmanager-stop /usr/bin/alertmanager-stop
 
-
-RUN for file in /bin/alertmanager/alertmanager*; do mv "$file" /bin/alertmanager/alertmanager; done
-
 EXPOSE 9093
 
-RUN chmod +x /bin/alertmanager/alertmanager
-WORKDIR /alertmanager
+RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/alertmanager-${ARCH#.}
+WORKDIR /usr/bin
 
 
 RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
     mkdir -p /home/appuser && \
     chown 1000:1000 /home/appuser
 
-RUN chown -R 1000:1000 /etc/alertmanager /alertmanager
-USER appuser
-# Make the entrypoint script executable
 
-VOLUME     [ "/alertmanager" ]
-WORKDIR    /alertmanager
-ENTRYPOINT [ "/bin/alertmanager/alertmanager" ]
-CMD        [ "--config.file=/etc/alertmanager/alertmanager-generated.yml", \
-             "--storage.path=/alertmanager" ]
+## Creating the default LOG Directory and data directory that we use in script so that when alertmanager
+## will run it can write data into it.
+## Limitation : Customer can't change the log and data path to some other directory, but they should be able to mount a volume and write on it.
+## Security Practice used: Principle of least privilege
+RUN mkdir -p /var/lib/confluent/control-center/alertmanager/ && \
+    mkdir -p /var/log/confluent/control-center && \
+    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center
+USER appuser
+
+VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
+ENTRYPOINT [ "alertmanager-start" ]
+
 
