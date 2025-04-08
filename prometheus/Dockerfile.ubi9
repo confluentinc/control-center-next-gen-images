@@ -97,9 +97,13 @@ RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
 
 ENV EXE_PATH="/usr/libexec/confluent-control-center"
 
-RUN mkdir -p /var/lib/confluent/control-center/prometheus/data
-RUN mkdir -p /var/log/confluent/control-center
-RUN chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data /var/log/confluent/control-center
+## Creating the default LOG Directory and data directory that we use in script so that when alertmanager
+## will run it can write data into tit.
+## Limitation : Customer can't change the log and data path to some other directory, but they should be able to mount a volume and write on it.
+## Security Practice used: Principle of least privilege
+RUN mkdir -p /var/lib/confluent/control-center/prometheus/data && \
+    mkdir -p /var/log/confluent/control-center && \
+    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data /var/log/confluent/control-center
 
 USER appuser
 

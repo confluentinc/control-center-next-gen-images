@@ -85,20 +85,24 @@ COPY --from=builder /usr/bin/alertmanager-stop /usr/bin/alertmanager-stop
 EXPOSE 9093
 
 RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/alertmanager-${ARCH#.}
-WORKDIR /alertmanager
+WORKDIR /usr/bin
 
 
 RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
     mkdir -p /home/appuser && \
     chown 1000:1000 /home/appuser
 
-RUN chown -R 1000:1000 /etc/confluent-control-center /alertmanager
-USER appuser
-# Make the entrypoint script executable
 
-VOLUME     [ "/alertmanager" ]
-WORKDIR    /alertmanager
-ENTRYPOINT [ "/usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/alertmanager-${ARCH#.}" ]
-CMD        [ "--config.file=/etc/confluent-control-center/alertmanager-generated.yml", \
-             "--storage.path=/alertmanager" ]
+## Creating the default LOG Directory and data directory that we use in script so that when alertmanager
+## will run it can write data into it.
+## Limitation : Customer can't change the log and data path to some other directory, but they should be able to mount a volume and write on it.
+## Security Practice used: Principle of least privilege
+RUN mkdir -p /var/lib/confluent/control-center/alertmanager/ && \
+    mkdir -p /var/log/confluent/control-center && \
+    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center
+USER appuser
+
+VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
+ENTRYPOINT [ "alertmanager-start" ]
+
 
