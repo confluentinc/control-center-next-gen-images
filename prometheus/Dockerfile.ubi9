@@ -87,7 +87,7 @@ COPY --from=builder /usr/bin/prometheus-stop /usr/bin/prometheus-stop
 
 EXPOSE 9090
 
-RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus
+RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/prometheus-${ARCH#.}
 WORKDIR /prometheus
 
 

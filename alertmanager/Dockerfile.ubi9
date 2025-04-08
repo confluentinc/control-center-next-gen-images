@@ -84,7 +84,7 @@ COPY --from=builder /usr/bin/alertmanager-stop /usr/bin/alertmanager-stop
 
 EXPOSE 9093
 
-RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager
+RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/alertmanager-${ARCH#.}
 WORKDIR /alertmanager
 
 
