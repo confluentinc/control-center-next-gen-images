@@ -88,18 +88,19 @@ COPY --from=builder /usr/bin/prometheus-stop /usr/bin/prometheus-stop
 EXPOSE 9090
 
 RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/prometheus-${ARCH#.}
-WORKDIR /prometheus
+WORKDIR /usr/bin
 
 
 RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
     mkdir -p /home/appuser && \
     chown 1000:1000 /home/appuser
+
+RUN export EXE_PATH="/usr/libexec/confluent-control-center" && \
+    export LOG_PATH=/etc/confluent-control-center/logs
 #
-RUN chown -R 1000:1000 /etc/confluent-control-center /prometheus
+RUN chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data
 USER appuser
 # Make the entrypoint script executable
 
-VOLUME     [ "/prometheus" ]
-ENTRYPOINT [ "/usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/prometheus-${ARCH#.}" ]
-CMD        [ "--config.file=/etc/confluent-control-center/prometheus-generated.yml", \
-             "--storage.tsdb.path=/prometheus" ]
+VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
+ENTRYPOINT [ "prometheus-start" ]
