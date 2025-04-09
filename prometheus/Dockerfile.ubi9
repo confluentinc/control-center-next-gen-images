@@ -97,7 +97,7 @@ RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
 
 ENV EXE_PATH="/usr/libexec/confluent-control-center"
 
-## Creating the default log directory and data directory utilized by the script to ensure that Alertmanager
+## Creating the default log directory and data directory utilized by the script to ensure that Prometheus
 ## can write data during its execution.
 ## Limitation: Customers are restricted from changing the log and data paths to alternative directories; however,
 ## they are permitted to mount a volume and write data to it.
