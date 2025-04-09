@@ -78,9 +78,7 @@ RUN mkdir -p /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus &&
 
 
 COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/ /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/
-COPY --from=builder /etc/confluent-control-center/prometheus-generated.yml /etc/confluent-control-center/prometheus-generated.yml
-COPY --from=builder /etc/confluent-control-center/trigger_rules-generated.yml /etc/confluent-control-center/
-COPY --from=builder /etc/confluent-control-center/recording_rules-generated.yml /etc/confluent-control-center/
+COPY --from=builder /etc/confluent-control-center/ /etc/confluent-control-center/
 COPY --from=builder /usr/bin/prometheus-start /usr/bin/prometheus-start
 COPY --from=builder /usr/bin/prometheus-stop /usr/bin/prometheus-stop
 
