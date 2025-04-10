@@ -24,7 +24,7 @@ semaphore:
       branch: master
       pipeline_file: .semaphore/cp_dockerfile_build.yml
       parameters:
-        - name: CONFLUENT_VERSION
+        - name: C3_VERSION
           required: true
         - name: PACKAGES_URL
           required: true
@@ -38,14 +38,11 @@ semaphore:
           options:
             - 'True'
             - 'False'
-        - name: CONFLUENT_DEB_VERSION
-          required: true
-          default_value: '1'
     - name: cp-dockerfile-promote
       branch: master
       pipeline_file: .semaphore/cp_dockerfile_promote.yml
       parameters:
-        - name: CONFLUENT_VERSION
+        - name: C3_VERSION
           required: true
         - name: IMAGE_REVISION
           required: true
@@ -57,7 +54,6 @@ semaphore:
         - name: PROMOTE_OS_TYPE
           required: true
           options:
-            - 'deb'
             - 'ubi'
 code_artifact:
   enable: true
