@@ -28,7 +28,7 @@ ENV OLD_COMPONENT_NAME=control-center
 ENV CONTROL_CENTER_DATA_DIR=/var/lib/confluent-${COMPONENT}
 ENV CONTROL_CENTER_CONFIG_DIR=/etc/confluent-${OLD_COMPONENT_NAME}
 
-ARG CONFLUENT_VERSION
+ARG C3_VERSION
 ARG CONFLUENT_PACKAGES_REPO
 ARG CONFLUENT_PLATFORM_LABEL
 
@@ -42,7 +42,7 @@ baseurl=${CONFLUENT_PACKAGES_REPO}/ \n\
 gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
-    && microdnf install -y confluent-${COMPONENT}-${CONFLUENT_VERSION} \
+    && microdnf install -y confluent-${COMPONENT}-${C3_VERSION} \
     && echo "===> Cleaning up ..."  \
     && microdnf clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
