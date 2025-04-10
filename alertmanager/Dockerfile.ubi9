@@ -100,7 +100,7 @@ RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
 ## Security Practice: Adheres to the principle of least privilege.
 RUN mkdir -p /var/lib/confluent/control-center/alertmanager/ && \
     mkdir -p /var/log/confluent/control-center && \
-    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center
+    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center /dev/stdout
 USER appuser
 
 VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
