@@ -24,7 +24,7 @@ semaphore:
       branch: master
       pipeline_file: .semaphore/cp_dockerfile_build.yml
       parameters:
-        - name: CONFLUENT_VERSION
+        - name: C3_VERSION
           required: true
         - name: PACKAGES_URL
           required: true
@@ -45,7 +45,7 @@ semaphore:
       branch: master
       pipeline_file: .semaphore/cp_dockerfile_promote.yml
       parameters:
-        - name: CONFLUENT_VERSION
+        - name: C3_VERSION
           required: true
         - name: IMAGE_REVISION
           required: true
