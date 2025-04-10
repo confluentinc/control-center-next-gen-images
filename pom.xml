@@ -47,9 +47,28 @@
                         <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
                         <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
                         <ARCH>${arch.type}</ARCH>
+                      <C3_VERSION>${C3_VERSION}</C3_VERSION>
                     </buildArgs>
                 </configuration>
             </plugin>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <configuration>
+              <images>
+                <image>
+                  <build>
+                    <args>
+                      <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
+                      <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
+                      <ARCH>${arch.type}</ARCH>
+                      <C3_VERSION>${C3_VERSION}</C3_VERSION>
+                    </args>
+                  </build>
+                </image>
+              </images>
+            </configuration>
+          </plugin>
         </plugins>
     </build>
 
