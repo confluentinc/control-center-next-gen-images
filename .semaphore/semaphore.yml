@@ -34,11 +34,12 @@ global_job_config:
       # For PR Builds using Packaging
       - pip install confluent-release-tools
       - export PACKAGING_BUCKET="s3://dev-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/$BRANCH_TAG/"
-      - export LATEST_PACKAGING_BUILD_NUMBER=$(aws s3 ls $PACKAGING_BUCKET --no-paginate --debug | grep 'PRE' | awk '{print $NF}' | awk '{print substr($1, 1, length($1)-1)}' | sort -n | tail -n 1)
+      - export LATEST_PACKAGING_BUILD_NUMBER=$(aws s3 ls $PACKAGING_BUCKET --no-paginate | grep 'PRE' | awk '{print $NF}' | awk '{print substr($1, 1, length($1)-1)}' | sort -n | tail -n 1)
       # Check if version is complete, otherwise use the previous version
-      - export CONFLUENT_VERSION=2.0.0 #hardcoded for now
+      - export C3_VERSION=2.0.0 #hardcoded for now
       - export DEFAULT_OS_TYPE="ubi"
       - export PACKAGES_URL="https://s3-us-west-2.amazonaws.com/dev-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/$BRANCH_TAG/$LATEST_PACKAGING_BUILD_NUMBER/PACKAGE_TYPE"
+      - 'echo "PACKAGES_URL: ${PACKAGES_URL}"'
       - export PACKAGING_BUILD_NUMBER=$LATEST_PACKAGING_BUILD_NUMBER
       - >-
         if [[ $IS_BETA || $IS_HOTFIX || $IS_POST ]]; then
@@ -48,7 +49,7 @@ global_job_config:
         else
             export PLATFORM_LABEL=""
         fi
-      - export PACKAGING_BUILD_ARGS=" -DCONFLUENT_VERSION=$CONFLUENT_VERSION  -DCONFLUENT_PLATFORM_LABEL=$PLATFORM_LABEL -DCONFLUENT_DEB_VERSION=$CONFLUENT_DEB_VERSION  -DALLOW_UNSIGNED=$ALLOW_UNSIGNED"
+      - export PACKAGING_BUILD_ARGS=" -DC3_VERSION=$C3_VERSION  -DCONFLUENT_PLATFORM_LABEL=$PLATFORM_LABEL -DCONFLUENT_DEB_VERSION=$CONFLUENT_DEB_VERSION  -DALLOW_UNSIGNED=$ALLOW_UNSIGNED"
       - >-
         if [[ $IS_RELEASE && $PACKAGING_BUILD_NUMBER ]]; then
           if [[ $IS_RC ]]; then
@@ -67,7 +68,7 @@ global_job_config:
       - export DOCKER_PROD_REGISTRY="519856050701.dkr.ecr.us-west-2.amazonaws.com/docker/prod/"
       - export DOCKER_UPSTREAM_REGISTRY=$DOCKER_PROD_REGISTRY
       - export LATEST_TAG=$BRANCH_TAG-latest
-      - export DOCKER_UPSTREAM_TAG="$LATEST_TAG"
+      - export DOCKER_UPSTREAM_TAG="master-latest"
       - export DOCKER_REPOS="confluentinc/cp-enterprise-control-center-next-gen confluentinc/cp-enterprise-prometheus confluentinc/cp-enterprise-alertmanager"
       - export COMMUNITY_DOCKER_REPOS=""
       - |
