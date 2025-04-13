@@ -14,8 +14,8 @@
 # limitations under the License.
 
 ARG DOCKER_UPSTREAM_REGISTRY
-ARG DOCKER_UPSTREAM_TAG=ubi9-latest
-ARG UBI_MICRO_VERSION
+ARG DOCKER_UPSTREAM_TAG=ubi8-latest
+ARG UBI_MINIMAL_VERSION
 
 FROM ${DOCKER_UPSTREAM_REGISTRY}confluentinc/cp-base-java:${DOCKER_UPSTREAM_TAG} as builder
 
@@ -53,7 +53,7 @@ enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && chown appuser:root -R "${CONTROL_CENTER_CONFIG_DIR}" \
     && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}"
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MICRO_VERSION}
+FROM registry.access.redhat.com/ubi8/ubi-minimal:${UBI_MINIMAL_VERSION}
 WORKDIR /app
 USER root
 

@@ -44,8 +44,7 @@
                 <artifactId>dockerfile-maven-plugin</artifactId>
                 <configuration>
                     <buildArgs>
-                        <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
-                        <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
+                        <UBI_MINIMAL_VERSION>${ubi8.image.version}</UBI_MINIMAL_VERSION>
                         <ARCH>${arch.type}</ARCH>
                       <C3_VERSION>${C3_VERSION}</C3_VERSION>
                     </buildArgs>
@@ -59,8 +58,7 @@
                 <image>
                   <build>
                     <args>
-                      <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
-                      <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
+                      <UBI_MINIMAL_VERSION>${ubi8.image.version}</UBI_MINIMAL_VERSION>
                       <ARCH>${arch.type}</ARCH>
                       <C3_VERSION>${C3_VERSION}</C3_VERSION>
                     </args>
@@ -78,6 +76,6 @@
         <arch.type>.arm64</arch.type>
         <!--  This is a placeholder for the architecture of the image that we will need from input
          and the input will come in mvn command from semaphore.yml file -->
-        <docker.file>Dockerfile.ubi9</docker.file>
+        <docker.file>Dockerfile.ubi8</docker.file>
     </properties>
 </project>
