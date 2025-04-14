@@ -54,26 +54,26 @@
 {{- $excludes = append $excludes $property }}
 {{ end -}}
 
-{{- $monitoring_interceptor_result := envToProps "CONTROL_CENTER_MONITORING_INTERCEPTOR_" "confluent.monitoring.interceptor." $excludes nil -}}
+{{- $monitoring_interceptor_result := envToProps "CONTROL_CENTER_MONITORING_INTERCEPTOR_" "confluent.monitoring.interceptor." $excludes nil nil -}}
 {{- range $name, $value := $monitoring_interceptor_result -}}
 {{ $name }}={{ $value -}}
 {{- $excludes = append $excludes $name }}
 {{ end -}}
 
-{{- $metadata_result := envToProps "CONFLUENT_METADATA_" "confluent.metadata." $excludes nil -}}
+{{- $metadata_result := envToProps "CONFLUENT_METADATA_" "confluent.metadata." $excludes nil nil -}}
 {{- range $name, $value := $metadata_result -}}
 {{ $name }}={{ $value -}}
 {{- $excludes = append $excludes $name }}
 {{ end -}}
 
-{{- $support_result := envToProps "CONFLUENT_SUPPORT_" "confluent.support." $excludes nil -}}
+{{- $support_result := envToProps "CONFLUENT_SUPPORT_" "confluent.support." $excludes nil nil -}}
 {{- range $name, $value := $support_result -}}
 {{ $name }}={{ $value -}}
 {{- $excludes = append $excludes $name }}
 {{ end -}}
 
-{{- /* 
-********************************************************************************************** 
+{{- /*
+**********************************************************************************************
 * setPropertiesWithEnvToPropsWithTwoPrefixes should be used for properties that have two
 * fixed translations to the env variables. For example, for metrics properties, both
 * CONTROL_CENTER_METRICS_ and CONFLUENT_METRICS_ deterministically always translate to
@@ -83,17 +83,17 @@
 * by both the primary and the secondary env prefix. Each translated property is NOT appended to
 * excludes.
 * Note this func could be deleted if env_to_props appends each translated property to excludes.
-********************************************************************************************** 
+**********************************************************************************************
 */ -}}
 
-{{- $metrics_result := setPropertiesWithEnvToPropsWithTwoPrefixes "CONTROL_CENTER_METRICS_" "CONFLUENT_METRICS_" "confluent.metrics." $excludes -}}
+{{- $metrics_result := setPropertiesWithEnvToPropsWithTwoPrefixes "CONTROL_CENTER_METRICS_" "CONFLUENT_METRICS_" "confluent.metrics." nil $excludes -}}
 {{- range $name, $value := $metrics_result -}}
 {{ $name }}={{ $value -}}
 {{- $excludes = append $excludes $name }}
 {{ end -}}
 
-{{- /* 
-********************************************************************************************** 
+{{- /*
+**********************************************************************************************
 * skip_prop_prefix should be used for properties that in general have a fixed
 * translation, but have a few props prefixes that should be skipped. For example, properties
 * that start with CONTROL_CENTER_ in general translates to confluent.controlcenter. However,
@@ -101,13 +101,13 @@
 * CONTROL_CENTER_ but they are special and should be skipped. Each translated property is NOT
 * appended to excludes.
 * Note this func could be deleted if env_to_props appends each translated property to excludes.
-********************************************************************************************** 
+**********************************************************************************************
 */ -}}
 
 {{- /* Skip properties that are already handled by required_props or would cause duplicates */ -}}
 {{- $skip_prop_prefix := stringSlice "confluent.controlcenter.metrics." "confluent.controlcenter.monitoring.interceptor." "confluent.controlcenter.bootstrap.servers" "confluent.controlcenter.zookeeper.connect" "confluent.controlcenter.replication.factor" "confluent.controlcenter.command.topic.replication" "confluent.controlcenter.internal.topics.replication" "confluent.controlcenter.metrics.topic.replication" -}}
 
-{{- $control_center_result := envToProps "CONTROL_CENTER_" "confluent.controlcenter." $excludes $skip_prop_prefix -}}
+{{- $control_center_result := envToProps "CONTROL_CENTER_" "confluent.controlcenter."  nil $skip_prop_prefix $excludes -}}
 {{- range $name, $value := $control_center_result -}}
 {{ $name }}={{ $value -}}
 {{- $excludes = append $excludes $name }}
