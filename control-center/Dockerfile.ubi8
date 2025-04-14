@@ -75,4 +75,6 @@ COPY --chown=appuser:appuser include/etc/confluent/docker /etc/confluent/docker
 
 USER appuser
 
+
+
 CMD ["/etc/confluent/docker/run"]
