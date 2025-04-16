@@ -29,7 +29,7 @@ ENV OLD_COMPONENT_NAME=control-center
 ENV CONTROL_CENTER_DATA_DIR=/var/lib/confluent-${COMPONENT}
 ENV CONTROL_CENTER_CONFIG_DIR=/etc/confluent-${OLD_COMPONENT_NAME}
 
-ARG CONFLUENT_VERSION
+ARG C3_VERSION
 ARG CONFLUENT_PACKAGES_REPO
 ARG CONFLUENT_PLATFORM_LABEL
 
@@ -43,7 +43,7 @@ baseurl=${CONFLUENT_PACKAGES_REPO}/ \n\
 gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
-    && microdnf install -y confluent-${COMPONENT}-${CONFLUENT_VERSION} \
+    && microdnf install -y confluent-${COMPONENT}-${C3_VERSION} \
     && echo "===> Cleaning up ..."  \
     && microdnf clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
@@ -73,31 +73,38 @@ ARG BUILD_NUMBER=-1
 LABEL io.confluent.docker.build.number=$BUILD_NUMBER
 LABEL io.confluent.docker.git.repo="confluentinc/control-center-images"
 
-RUN mkdir /etc/prometheus && \
-    mkdir /bin/prometheus
+RUN mkdir -p /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus && \
+    mkdir -p /etc/confluent-control-center
 
-COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/ /bin/prometheus/
-COPY --from=builder /etc/confluent-control-center/prometheus-generated.yml /etc/prometheus/prometheus-generated.yml
-COPY --from=builder /etc/confluent-control-center/trigger_rules-generated.yml /etc/prometheus/
-COPY --from=builder /etc/confluent-control-center/recording_rules-generated.yml /etc/prometheus/
 
-RUN for file in /bin/prometheus/prometheus*; do mv "$file" /bin/prometheus/prometheus; done
+COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/ /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/
+COPY --from=builder /etc/confluent-control-center/ /etc/confluent-control-center/
+COPY --from=builder /usr/bin/prometheus-start /usr/bin/prometheus-start
+COPY --from=builder /usr/bin/prometheus-stop /usr/bin/prometheus-stop
+
 
 EXPOSE 9090
 
-RUN chmod +x /bin/prometheus/prometheus
-WORKDIR /prometheus
+RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/prometheus-${ARCH#.}
+WORKDIR /usr/bin
 
 
 RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
     mkdir -p /home/appuser && \
     chown 1000:1000 /home/appuser
-#
-RUN chown -R 1000:1000 /etc/prometheus /prometheus
-USER appuser
-# Make the entrypoint script executable
 
-VOLUME     [ "/prometheus" ]
-ENTRYPOINT [ "/bin/prometheus/prometheus" ]
-CMD        [ "--config.file=/etc/prometheus/prometheus-generated.yml", \
-             "--storage.tsdb.path=/prometheus" ]
+ENV EXE_PATH="/usr/libexec/confluent-control-center"
+
+## Creating the default log directory and data directory utilized by the script to ensure that Prometheus
+## can write data during its execution.
+## Limitation: Customers are restricted from changing the log and data paths to alternative directories; however,
+## they are permitted to mount a volume and write data to it.
+## Security Practice: Adheres to the principle of least privilege.
+RUN mkdir -p /var/lib/confluent/control-center/prometheus/data && \
+    mkdir -p /var/log/confluent/control-center && \
+    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data /var/log/confluent/control-center /dev/stdout
+
+USER appuser
+
+VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
+ENTRYPOINT ["prometheus-start"]

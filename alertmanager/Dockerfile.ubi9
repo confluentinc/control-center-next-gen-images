@@ -28,7 +28,7 @@ ENV OLD_COMPONENT_NAME=control-center
 ENV CONTROL_CENTER_DATA_DIR=/var/lib/confluent-${COMPONENT}
 ENV CONTROL_CENTER_CONFIG_DIR=/etc/confluent-${OLD_COMPONENT_NAME}
 
-ARG CONFLUENT_VERSION
+ARG C3_VERSION
 ARG CONFLUENT_PACKAGES_REPO
 ARG CONFLUENT_PLATFORM_LABEL
 
@@ -42,7 +42,7 @@ baseurl=${CONFLUENT_PACKAGES_REPO}/ \n\
 gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
-    && microdnf install -y confluent-${COMPONENT}-${CONFLUENT_VERSION} \
+    && microdnf install -y confluent-${COMPONENT}-${C3_VERSION} \
     && echo "===> Cleaning up ..."  \
     && microdnf clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
@@ -73,34 +73,37 @@ LABEL io.confluent.docker.build.number=$BUILD_NUMBER
 LABEL io.confluent.docker.git.repo="confluentinc/control-center-images"
 
 
-RUN mkdir /etc/alertmanager && \
-    mkdir /bin/alertmanager
-
+RUN mkdir -p /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager && \
+    mkdir -p /etc/confluent-control-center
 
 # Use the cleaned ARCH variable in subsequent commands
-COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/ /bin/alertmanager
-COPY --from=builder /etc/confluent-control-center/alertmanager-generated.yml /etc/alertmanager/alertmanager-generated.yml
-
-
-RUN for file in /bin/alertmanager/alertmanager*; do mv "$file" /bin/alertmanager/alertmanager; done
+COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/ /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/
+COPY --from=builder /etc/confluent-control-center/ /etc/confluent-control-center/
+COPY --from=builder /usr/bin/alertmanager-start /usr/bin/alertmanager-start
+COPY --from=builder /usr/bin/alertmanager-stop /usr/bin/alertmanager-stop
 
 EXPOSE 9093
 
-RUN chmod +x /bin/alertmanager/alertmanager
-WORKDIR /alertmanager
+RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/alertmanager-${ARCH#.}
+WORKDIR /usr/bin
 
 
 RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
     mkdir -p /home/appuser && \
     chown 1000:1000 /home/appuser
 
-RUN chown -R 1000:1000 /etc/alertmanager /alertmanager
-USER appuser
-# Make the entrypoint script executable
 
-VOLUME     [ "/alertmanager" ]
-WORKDIR    /alertmanager
-ENTRYPOINT [ "/bin/alertmanager/alertmanager" ]
-CMD        [ "--config.file=/etc/alertmanager/alertmanager-generated.yml", \
-             "--storage.path=/alertmanager" ]
+## Creating the default log directory and data directory utilized by the script to ensure that Alertmanager
+## can write data during its execution.
+## Limitation: Customers are restricted from changing the log and data paths to alternative directories; however,
+## they are permitted to mount a volume and write data to it.
+## Security Practice: Adheres to the principle of least privilege.
+RUN mkdir -p /var/lib/confluent/control-center/alertmanager/ && \
+    mkdir -p /var/log/confluent/control-center && \
+    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center /dev/stdout
+USER appuser
+
+VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
+ENTRYPOINT [ "alertmanager-start" ]
+
 
