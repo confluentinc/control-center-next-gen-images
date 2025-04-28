@@ -15,4 +15,4 @@
 # limitations under the License.
 
 echo "===> Launching ${COMPONENT} ... "
-exec "${OLD_COMPONENT_NAME}-start" "${CONTROL_CENTER_CONFIG_DIR}/${OLD_COMPONENT_NAME}.properties"
+exec "${OLD_COMPONENT_NAME}-start" "${CONTROL_CENTER_CONFIG_DIR}/${COMPONENT}.properties"
