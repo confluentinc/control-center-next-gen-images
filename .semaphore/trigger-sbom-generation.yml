@@ -14,4 +14,4 @@ blocks:
           commands:
             - |
               sem-trigger -p appsec-semaphore-workflows -b master -t c3-next-generation-release-time-sbom-generation \
-              -i "VERSION:${SEMAPHORE_GIT_BRANCH}" -w
+              -i "VERSION:${SEMAPHORE_GIT_BRANCH}" -i "DT_UPLOAD:true" -w
