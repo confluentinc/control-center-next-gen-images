@@ -400,6 +400,12 @@ blocks:
                 docker manifest create $image:$LATEST_MANIFEST_TAG $image:$LATEST_MANIFEST_TAG$AMD_ARCH $image:$LATEST_MANIFEST_TAG$ARM_ARCH
                 docker manifest push $image:$LATEST_MANIFEST_TAG
               done
+promotions:
+  - name: 'Trigger APPSEC SBOM Generation Task'
+    pipeline_file: trigger-sbom-generation.yml
+    auto_promote:
+      # Run this promotion for RC branches
+      when: "result = 'passed' and branch =~ '^\\d+\\.\\d+\\.\\d+-rc\\d+$'"
 after_pipeline:
   task:
     agent:
