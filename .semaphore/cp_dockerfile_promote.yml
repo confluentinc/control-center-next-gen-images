@@ -106,7 +106,7 @@ blocks:
             - export PROMOTED_TAG="$PROMOTED_TAG_PREFIX$OS_TAG$AMD_ARCH"
             - docker pull $DOCKER_PROD_REGISTRY$DOCKER_REPO:$INTERNAL_IMAGE_TAG
             - docker tag $DOCKER_PROD_REGISTRY$DOCKER_REPO:$INTERNAL_IMAGE_TAG $DOCKER_REPO:$PROMOTED_TAG
-            - docker run --rm $DOCKER_REPO:$PROMOTED_TAG sh -c "grep staging /etc/yum.repos.d/confluent.repo || grep staging /etc/apt/sources.list" || export STAGING_CHECK_SUCCEED="true"
+            - docker run --rm --entrypoint /bin/bash $DOCKER_REPO:$PROMOTED_TAG grep staging /etc/yum.repos.d/confluent.repo || export STAGING_CHECK_SUCCEED="true"
             - if [[ ! "$STAGING_CHECK_SUCCEED" ]]; then echo "Detected there was a staging repo in image $DOCKER_REPO:$PROMOTED_TAG refusing to promote." && exit 1; fi
             - docker push $DOCKER_REPO:$PROMOTED_TAG
             - >-
@@ -137,7 +137,7 @@ blocks:
             - export PROMOTED_TAG="$PROMOTED_TAG_PREFIX$OS_TAG$AMD_ARCH"
             - docker pull $DOCKER_PROD_REGISTRY$DOCKER_REPO:$INTERNAL_IMAGE_TAG
             - docker tag $DOCKER_PROD_REGISTRY$DOCKER_REPO:$INTERNAL_IMAGE_TAG $DOCKER_REPO:$PROMOTED_TAG
-            - docker run --rm $DOCKER_REPO:$PROMOTED_TAG sh -c "grep staging /etc/yum.repos.d/confluent.repo || grep staging /etc/apt/sources.list" || export STAGING_CHECK_SUCCEED="true"
+            - docker run --rm --entrypoint /bin/bash $DOCKER_REPO:$PROMOTED_TAG grep staging /etc/yum.repos.d/confluent.repo || export STAGING_CHECK_SUCCEED="true"
             - if [[ ! "$STAGING_CHECK_SUCCEED" ]]; then echo "Detected there was a staging repo in image $DOCKER_REPO:$PROMOTED_TAG refusing to promote." && exit 1; fi
             - docker push $DOCKER_REPO:$PROMOTED_TAG
             - >-
@@ -203,7 +203,7 @@ blocks:
             - export PROMOTED_TAG="$PROMOTED_TAG_PREFIX$OS_TAG$ARM_ARCH"
             - docker pull $DOCKER_PROD_REGISTRY$DOCKER_REPO:$INTERNAL_IMAGE_TAG
             - docker tag $DOCKER_PROD_REGISTRY$DOCKER_REPO:$INTERNAL_IMAGE_TAG $DOCKER_REPO:$PROMOTED_TAG
-            - docker run --rm $DOCKER_REPO:$PROMOTED_TAG sh -c "grep staging /etc/yum.repos.d/confluent.repo || grep staging /etc/apt/sources.list" || export STAGING_CHECK_SUCCEED="true"
+            - docker run --rm --entrypoint /bin/bash $DOCKER_REPO:$PROMOTED_TAG grep staging /etc/yum.repos.d/confluent.repo || export STAGING_CHECK_SUCCEED="true"
             - if [[ ! "$STAGING_CHECK_SUCCEED" ]]; then echo "Detected there was a staging repo in image $DOCKER_REPO:$PROMOTED_TAG refusing to promote." && exit 1; fi
             - docker push $DOCKER_REPO:$PROMOTED_TAG
             - >-
@@ -234,7 +234,7 @@ blocks:
             - export PROMOTED_TAG="$PROMOTED_TAG_PREFIX$OS_TAG$ARM_ARCH"
             - docker pull $DOCKER_PROD_REGISTRY$DOCKER_REPO:$INTERNAL_IMAGE_TAG
             - docker tag $DOCKER_PROD_REGISTRY$DOCKER_REPO:$INTERNAL_IMAGE_TAG $DOCKER_REPO:$PROMOTED_TAG
-            - docker run --rm $DOCKER_REPO:$PROMOTED_TAG sh -c "grep staging /etc/yum.repos.d/confluent.repo || grep staging /etc/apt/sources.list" || export STAGING_CHECK_SUCCEED="true"
+            - docker run --rm --entrypoint /bin/bash $DOCKER_REPO:$PROMOTED_TAG grep staging /etc/yum.repos.d/confluent.repo || export STAGING_CHECK_SUCCEED="true"
             - if [[ ! "$STAGING_CHECK_SUCCEED" ]]; then echo "Detected there was a staging repo in image $DOCKER_REPO:$PROMOTED_TAG refusing to promote." && exit 1; fi
             - docker push $DOCKER_REPO:$PROMOTED_TAG
             - >-
