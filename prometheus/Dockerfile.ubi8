@@ -62,13 +62,13 @@ ARG ARCH
 
 LABEL maintainer="partner-support@confluent.io"
 LABEL vendor="Confluent"
-LABEL version=$GIT_COMMIT
-LABEL release=$PROJECT_VERSION
-LABEL name=$ARTIFACT_ID
+LABEL version="b988d4b"
+LABEL release="2.1.0-1"
+LABEL name="test-name"
 LABEL summary="Prometheus is a monitoring system and time series database, used as backend for Next Gen C3"
 LABEL description="Prometheus is a monitoring system and time series database, used as backend for Next Gen C3"
 LABEL io.confluent.docker=true
-LABEL io.confluent.docker.git.id=$GIT_COMMIT
+LABEL io.confluent.docker.git.id="b988d4b"
 ARG BUILD_NUMBER=-1
 LABEL io.confluent.docker.build.number=$BUILD_NUMBER
 LABEL io.confluent.docker.git.repo="confluentinc/control-center-images"
@@ -103,6 +103,9 @@ ENV EXE_PATH="/usr/libexec/confluent-control-center"
 RUN mkdir -p /var/lib/confluent/control-center/prometheus/data && \
     mkdir -p /var/log/confluent/control-center && \
     chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data /var/log/confluent/control-center /dev/stdout
+
+
+RUN mkdir -p /licenses && echo "Copyright 2020 Confluent, Inc." > /licenses/license.txt
 
 USER appuser
 
