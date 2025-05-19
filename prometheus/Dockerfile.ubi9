@@ -58,6 +58,10 @@ WORKDIR /app
 USER root
 
 ARG ARCH
+ARG PROJECT_VERSION
+ARG ARTIFACT_ID
+ARG GIT_COMMIT
+
 # Update package list and install essential packages
 
 LABEL maintainer="partner-support@confluent.io"
@@ -81,6 +85,7 @@ COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/promet
 COPY --from=builder /etc/confluent-control-center/ /etc/confluent-control-center/
 COPY --from=builder /usr/bin/prometheus-start /usr/bin/prometheus-start
 COPY --from=builder /usr/bin/prometheus-stop /usr/bin/prometheus-stop
+COPY --from=builder /licenses /licenses
 
 
 EXPOSE 9090
