@@ -1,0 +1,28 @@
+Configuration:
+  status: WARN
+
+# Console appender configuration
+  Appenders:
+    Console:
+      - name: ConsoleAppender
+        PatternLayout:
+          pattern: "[%d] %p %m (%c)%n"
+
+# Root logger configuration
+  Loggers:
+    Root:
+      level: "{{ env['CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL'] | default('INFO') }}"
+      AppenderRef:
+        - ref: ConsoleAppender
+
+{% if env['CONTROL_CENTER_LOG4J_LOGGERS'] %}
+    # Dynamic logger configuration (if CONTROL_CENTER_LOG4J_LOGGERS is set)
+    Logger:
+{% set loggers = parse_log4j_loggers(env['CONTROL_CENTER_LOG4J_LOGGERS']) %}
+{% for logger, loglevel in loggers.items() %}
+      - name: {{logger}}
+        level: {{loglevel}}
+        AppenderRef:
+            - ref: ConsoleAppender
+{% endfor %}
+{% endif %}
