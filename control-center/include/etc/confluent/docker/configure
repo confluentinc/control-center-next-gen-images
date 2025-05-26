@@ -28,5 +28,5 @@ echo "===> Check if ${CONTROL_CENTER_DATA_DIR} is writable ..."
 dub path "${CONTROL_CENTER_DATA_DIR}" writable
 
 dub template "/etc/confluent/docker/${OLD_COMPONENT_NAME}.properties.template" "${CONTROL_CENTER_CONFIG_DIR}/${OLD_COMPONENT_NAME}.properties"
-dub template "/etc/confluent/docker/log4j.properties.template" "${CONTROL_CENTER_CONFIG_DIR}/log4j.properties"
+dub template "/etc/confluent/docker/log4j2.yaml.template" "${CONTROL_CENTER_CONFIG_DIR}/log4j2.yaml"
 dub template "/etc/confluent/docker/admin.properties.template" "${CONTROL_CENTER_CONFIG_DIR}/admin.properties"
