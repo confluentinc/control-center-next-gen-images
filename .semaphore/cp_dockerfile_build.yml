@@ -373,14 +373,14 @@ blocks:
       jobs:
         - name: Create Manifest and Maven Deploy
           commands:
-            - export DOCKER_PROD_IMAGE_NAME=$DOCKER_PROD_REGISTRY${DOCKER_REPOS// / $DOCKER_PROD_REGISTRY}
+            - export DOCKER_PROD_IMAGE_NAMES=$DOCKER_PROD_REGISTRY${DOCKER_REPOS// / $DOCKER_PROD_REGISTRY}
             - |-
               if [[ ! $IS_RELEASE && ! $IS_PREVIEW ]]; then
                 echo "maven deploy command"
               fi
             # Create manifest
             - >-
-              for image in $DOCKER_PROD_IMAGE_NAME;
+              for image in $DOCKER_PROD_IMAGE_NAMES;
               do
                 export OS_TAG="-ubi8"
                 export GIT_TAG=$GIT_COMMIT$OS_TAG
@@ -410,7 +410,8 @@ blocks:
         - name: Create Manifest and Maven Deploy
           commands:
             - export DOCKER_PROD_IMAGE_NAMES=$DOCKER_PROD_REGISTRY${DOCKER_REPOS// / $DOCKER_PROD_REGISTRY}
-            - echo "The following tags are available for this build:"
+            - export OS_TAG="-ubi8"
+            - echo "The following tags are available for this build:" > docker-tags-summary.txt
             - >-
               for image in $DOCKER_PROD_IMAGE_NAMES;
               do
@@ -418,6 +419,7 @@ blocks:
                 echo "$image:$BRANCH_TAG-$BUILD_NUMBER$OS_TAG" >> docker-tags-summary.txt
                 echo "$image:$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG" >> docker-tags-summary.txt
                 echo "$image:$LATEST_TAG$OS_TAG" >> docker-tags-summary.txt
+                echo "" >> docker-tags-summary.txt
               done
             - echo "Tags summary saved to docker-tags-summary.txt"
             - artifact push workflow docker-tags-summary.txt
