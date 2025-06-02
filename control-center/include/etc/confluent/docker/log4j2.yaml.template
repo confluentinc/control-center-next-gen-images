@@ -11,18 +11,16 @@ Configuration:
 # Root logger configuration
   Loggers:
     Root:
-      level: "{{ env['CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL'] | default('INFO') }}"
+      level: {{ getEnv "CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL" "INFO" }}
       AppenderRef:
         - ref: ConsoleAppender
-
-{% if env['CONTROL_CENTER_LOG4J_LOGGERS'] %}
-    # Dynamic logger configuration (if CONTROL_CENTER_LOG4J_LOGGERS is set)
+        
+# Dynamic logger configuration (if CONTROL_CENTER_LOG4J_LOGGERS is set)
+{{- $loggers := getEnv "CONTROL_CENTER_LOG4J_LOGGERS" "" -}}
+{{- range $logger, $loglevel := splitToMapDefaults ","  "" $loggers}}
     Logger:
-{% set loggers = parse_log4j_loggers(env['CONTROL_CENTER_LOG4J_LOGGERS']) %}
-{% for logger, loglevel in loggers.items() %}
-      - name: {{logger}}
-        level: {{loglevel}}
+      - name: {{ $logger }}
+        level: {{ $loglevel }}
         AppenderRef:
             - ref: ConsoleAppender
-{% endfor %}
-{% endif %}
+{{- end }}
