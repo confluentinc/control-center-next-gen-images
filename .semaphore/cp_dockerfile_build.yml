@@ -410,7 +410,7 @@ blocks:
         - name: Push docker images tags summary to artifacts
           commands:
             - export DOCKER_PROD_IMAGE_NAMES=$DOCKER_PROD_REGISTRY${DOCKER_REPOS// / $DOCKER_PROD_REGISTRY}
-            - export OS_TAG="-ubi8"
+            - export OS_TAG="-ubi9"
             - echo "The following tags are available for this build:" > docker-tags-summary.txt
             - >-
               for image in $DOCKER_PROD_IMAGE_NAMES;
