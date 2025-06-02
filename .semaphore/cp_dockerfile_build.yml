@@ -400,6 +400,35 @@ blocks:
                 docker manifest create $image:$LATEST_MANIFEST_TAG $image:$LATEST_MANIFEST_TAG$AMD_ARCH $image:$LATEST_MANIFEST_TAG$ARM_ARCH
                 docker manifest push $image:$LATEST_MANIFEST_TAG
               done
+  - name: Push docker images tags summary to artifacts
+    dependencies:
+      - Create Manifest and Maven Deploy
+    run:
+      when: "branch = 'master' or branch =~ '^[0-9]+\\.[0-9]+\\.x$' or branch =~ '^[0-9]+\\.[0-9]+\\.[0-9]+(-cp[0-9]+)?(-rc[0-9]+)?$'"
+    task:
+      jobs:
+        - name: Push docker images tags summary to artifacts
+          commands:
+            - export DOCKER_PROD_IMAGE_NAMES=$DOCKER_PROD_REGISTRY${DOCKER_REPOS// / $DOCKER_PROD_REGISTRY}
+            - export OS_TAG="-ubi8"
+            - echo "The following tags are available for this build:" > docker-tags-summary.txt
+            - >-
+              for image in $DOCKER_PROD_IMAGE_NAMES;
+              do
+                echo "$image:$GIT_COMMIT$OS_TAG" >> docker-tags-summary.txt
+                echo "$image:$BRANCH_TAG-$BUILD_NUMBER$OS_TAG" >> docker-tags-summary.txt
+                echo "$image:$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG" >> docker-tags-summary.txt
+                echo "$image:$LATEST_TAG$OS_TAG" >> docker-tags-summary.txt
+                echo "" >> docker-tags-summary.txt
+              done
+            - echo "Tags summary saved to docker-tags-summary.txt"
+            - artifact push workflow docker-tags-summary.txt
+promotions:
+  - name: 'Trigger APPSEC SBOM Generation Task'
+    pipeline_file: trigger-sbom-generation.yml
+    auto_promote:
+      # Run this promotion for RC branches
+      when: "result = 'passed' and branch =~ '^\\d+\\.\\d+\\.\\d+-rc\\d+$'"
 after_pipeline:
   task:
     agent:

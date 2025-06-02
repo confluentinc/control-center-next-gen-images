@@ -27,6 +27,6 @@ ub path "${CONTROL_CENTER_CONFIG_DIR}" writable
 echo "===> Check if ${CONTROL_CENTER_DATA_DIR} is writable ..."
 ub path "${CONTROL_CENTER_DATA_DIR}" writable
 
-ub render-template "/etc/confluent/docker/${OLD_COMPONENT_NAME}.properties.template" "${CONTROL_CENTER_CONFIG_DIR}/${COMPONENT}.properties"
-ub render-template "/etc/confluent/docker/log4j.properties.template" "${CONTROL_CENTER_CONFIG_DIR}/log4j.properties"
-ub render-template "/etc/confluent/docker/admin.properties.template" "${CONTROL_CENTER_CONFIG_DIR}/admin.properties"
+ub render-template "/etc/confluent/docker/${OLD_COMPONENT_NAME}.properties.template" > "${CONTROL_CENTER_CONFIG_DIR}/${COMPONENT}.properties"
+ub render-template "/etc/confluent/docker/log4j.properties.template" > "${CONTROL_CENTER_CONFIG_DIR}/log4j.properties"
+ub render-template "/etc/confluent/docker/admin.properties.template" > "${CONTROL_CENTER_CONFIG_DIR}/admin.properties"

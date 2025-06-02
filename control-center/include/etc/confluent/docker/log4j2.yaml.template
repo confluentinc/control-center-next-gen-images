@@ -1,0 +1,26 @@
+Configuration:
+  status: WARN
+
+# Console appender configuration
+  Appenders:
+    Console:
+      - name: ConsoleAppender
+        PatternLayout:
+          pattern: "[%d] %p %m (%c)%n"
+
+# Root logger configuration
+  Loggers:
+    Root:
+      level: {{ getEnv "CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL" "INFO" }}
+      AppenderRef:
+        - ref: ConsoleAppender
+        
+# Dynamic logger configuration (if CONTROL_CENTER_LOG4J_LOGGERS is set)
+{{- $loggers := getEnv "CONTROL_CENTER_LOG4J_LOGGERS" "" -}}
+{{- range $logger, $loglevel := splitToMapDefaults ","  "" $loggers}}
+    Logger:
+      - name: {{ $logger }}
+        level: {{ $loglevel }}
+        AppenderRef:
+            - ref: ConsoleAppender
+{{- end }}

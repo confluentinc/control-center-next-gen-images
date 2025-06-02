@@ -57,6 +57,10 @@ WORKDIR /app
 USER root
 
 ARG ARCH
+ARG PROJECT_VERSION
+ARG ARTIFACT_ID
+ARG GIT_COMMIT
+
 # Update package list and install essential packages
 
 LABEL maintainer="partner-support@confluent.io"
@@ -81,7 +85,7 @@ COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertm
 COPY --from=builder /etc/confluent-control-center/ /etc/confluent-control-center/
 COPY --from=builder /usr/bin/alertmanager-start /usr/bin/alertmanager-start
 COPY --from=builder /usr/bin/alertmanager-stop /usr/bin/alertmanager-stop
-
+COPY --from=builder /licenses /licenses
 EXPOSE 9093
 
 RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/alertmanager-${ARCH#.}
