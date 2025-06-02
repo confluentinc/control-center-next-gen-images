@@ -36,7 +36,7 @@ global_job_config:
       - export PACKAGING_BUCKET="s3://dev-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/$BRANCH_TAG/"
       - export LATEST_PACKAGING_BUILD_NUMBER=$(aws s3 ls $PACKAGING_BUCKET --no-paginate | grep 'PRE' | awk '{print $NF}' | awk '{print substr($1, 1, length($1)-1)}' | sort -n | tail -n 1)
       # Check if version is complete, otherwise use the previous version
-      - export C3_VERSION=2.2.0 #hardcoded for now
+      - export C3_VERSION=2.0.0 #hardcoded for now
       - export DEFAULT_OS_TYPE="ubi"
       - export PACKAGES_URL="https://s3-us-west-2.amazonaws.com/dev-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/$BRANCH_TAG/$LATEST_PACKAGING_BUILD_NUMBER/PACKAGE_TYPE"
       - 'echo "PACKAGES_URL: ${PACKAGES_URL}"'
