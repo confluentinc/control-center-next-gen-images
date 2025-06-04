@@ -9,9 +9,9 @@ import confluent.docker_utils as utils
 IMAGE_NAME = 'confluentinc/cp-enterprise-control-center-next-gen'
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 FIXTURES_DIR = os.path.join(CURRENT_DIR, "fixtures")
-KAFKA_READY = "bash -c 'cub kafka-ready {brokers} 40 -z $KAFKA_ZOOKEEPER_CONNECT && echo PASS || echo FAIL'"
+KAFKA_READY = "bash -c 'ub kafka-ready {brokers} 40 -z $KAFKA_ZOOKEEPER_CONNECT && echo PASS || echo FAIL'"
 ZK_READY = "bash -c 'cub zk-ready {servers} 40 && echo PASS || echo FAIL'"
-C3_CHECK = "bash -c 'dub wait {host} {port} 240 && curl -fs -X GET -i {host}:{port}/ && echo PASS || echo FAIL'"
+C3_CHECK = "bash -c 'ub wait {host} {port} 240 && curl -fs -X GET -i {host}:{port}/ && echo PASS || echo FAIL'"
 
 
 def props_to_list(props_str):
@@ -166,7 +166,7 @@ class StandaloneNetworkingTest(unittest.TestCase):
             export TOPIC="{topic}" \
             export MESSAGES="{messages}" \
             export CHECK_MESSAGES="{check_messages}"
-            cub kafka-ready 1 40 -z "$ZOOKEEPER_CONNECT" \
+            ub kafka-ready 1 40 -z "$ZOOKEEPER_CONNECT" \
             && control-center-run-class kafka.admin.TopicCommand --create --topic "$TOPIC" --partitions 1 --replication-factor 1 --zookeeper "$ZOOKEEPER_CONNECT" --if-not-exists \
             && seq "$MESSAGES" | control-center-run-class kafka.tools.ConsoleProducer --broker-list "$BOOTSTRAP_SERVERS" --topic "$TOPIC" --producer-property interceptor.classes=io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor \
             && echo PRODUCED "$MESSAGES" messages. \
