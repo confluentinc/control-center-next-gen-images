@@ -44,7 +44,7 @@ gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && microdnf install -y confluent-${COMPONENT}-${C3_VERSION} \
-    && RUN microdnf install -y ca-certificates \
+    && microdnf install -y ca-certificates \
     && echo "===> Cleaning up ..."  \
     && microdnf clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
