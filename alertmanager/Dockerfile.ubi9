@@ -43,6 +43,7 @@ gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && microdnf install -y confluent-${COMPONENT}-${C3_VERSION} \
+    && microdnf install -y ca-certificates \
     && echo "===> Cleaning up ..."  \
     && microdnf clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
@@ -76,8 +77,6 @@ ARG BUILD_NUMBER=-1
 LABEL io.confluent.docker.build.number=$BUILD_NUMBER
 LABEL io.confluent.docker.git.repo="confluentinc/control-center-images"
 
-RUN microdnf install -y ca-certificates && microdnf clean all
-
 RUN mkdir -p /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager && \
     mkdir -p /etc/confluent-control-center
 
@@ -87,6 +86,9 @@ COPY --from=builder /etc/confluent-control-center/ /etc/confluent-control-center
 COPY --from=builder /usr/bin/alertmanager-start /usr/bin/alertmanager-start
 COPY --from=builder /usr/bin/alertmanager-stop /usr/bin/alertmanager-stop
 COPY --from=builder /licenses /licenses
+COPY --from=builder /etc/pki/ca-trust /etc/pki/ca-trust
+COPY --from=builder /etc/ssl/certs /etc/ssl/certs
+
 EXPOSE 9093
 
 RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/alertmanager-${ARCH#.}
