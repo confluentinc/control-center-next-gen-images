@@ -23,7 +23,7 @@
     <parent>
         <groupId>io.confluent.control-center-images-next-gen</groupId>
         <artifactId>control-center-images-parent-next-gen</artifactId>
-        <version>2.2.0-0</version>
+        <version>2.2.0</version>
     </parent>
 
     <groupId>io.confluent.control-center-images-next-gen</groupId>
