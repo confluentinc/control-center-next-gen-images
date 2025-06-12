@@ -109,7 +109,7 @@ ENV EXE_PATH="/usr/libexec/confluent-control-center"
 ## Security Practice: Adheres to the principle of least privilege.
 RUN mkdir -p /var/lib/confluent/control-center/prometheus/data && \
     mkdir -p /var/log/confluent/control-center && \
-    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data /var/log/confluent/control-center /dev/stdout
+    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data /var/log/confluent/control-center
 
 USER appuser
 
