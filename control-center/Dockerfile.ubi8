@@ -69,7 +69,9 @@ enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && rm /usr/lib/systemd/system/prometheus.service  \
     && rm -r /usr/libexec/confluent-control-center/linux_*/prometheus \
     && rm /usr/lib/systemd/system/alertmanager.service  \
-    && rm -r /usr/libexec/confluent-control-center/linux_*/alertmanager
+    && rm -r /usr/libexec/confluent-control-center/linux_*/alertmanager  \
+    && echo "===> Deduping jars present in /usr/share/java ..."  \
+    && package_dedupe /usr/share/java
 
 COPY --chown=appuser:appuser include/etc/confluent/docker /etc/confluent/docker
 
