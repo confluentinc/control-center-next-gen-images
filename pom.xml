@@ -39,18 +39,42 @@
     </modules>
     <build>
         <plugins>
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>dockerfile-maven-plugin</artifactId>
+          <plugin>
+            <groupId>com.spotify</groupId>
+            <artifactId>dockerfile-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>package</id>
+                <goals>
+                  <goal>build</goal>
+                </goals>
                 <configuration>
-                    <buildArgs>
-                        <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
-                        <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
-                        <ARCH>${arch.type}</ARCH>
-                      <C3_VERSION>${C3_VERSION}</C3_VERSION>
-                    </buildArgs>
+                  <buildArgs>
+                    <ARTIFACT_ID>${project.artifactId}</ARTIFACT_ID>
+                    <BUILD_NUMBER>${BUILD_NUMBER}</BUILD_NUMBER>
+                    <DOCKER_REGISTRY>${docker.registry}</DOCKER_REGISTRY>
+                    <DOCKER_TAG>${docker.tag}</DOCKER_TAG>
+                    <DOCKER_UPSTREAM_REGISTRY>${docker.upstream-registry}</DOCKER_UPSTREAM_REGISTRY>
+                    <DOCKER_UPSTREAM_TAG>${docker.upstream-tag}</DOCKER_UPSTREAM_TAG>
+                    <GIT_COMMIT>${GIT_COMMIT}</GIT_COMMIT>
+                    <PROJECT_VERSION>${project.version}</PROJECT_VERSION>
+                    <CONFLUENT_PACKAGES_REPO>${CONFLUENT_PACKAGES_REPO}</CONFLUENT_PACKAGES_REPO>
+                    <CONFLUENT_PLATFORM_LABEL>${CONFLUENT_PLATFORM_LABEL}</CONFLUENT_PLATFORM_LABEL>
+                    <ALLOW_UNSIGNED>${ALLOW_UNSIGNED}</ALLOW_UNSIGNED>
+                    <ARCH>${arch.type}</ARCH>
+                    <C3_VERSION>${C3_VERSION}</C3_VERSION>
+                    <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
+                    <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
+                  </buildArgs>
+                  <skip>${docker.skip-build}</skip>
+                  <tag>${docker.tag}</tag>
+                  <repository>${docker.registry}confluentinc/${project.artifactId}</repository>
+                  <pullNewerImage>${docker.pull-image}</pullNewerImage>
+                  <dockerfile>${docker.file}</dockerfile>
                 </configuration>
-            </plugin>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>io.fabric8</groupId>
             <artifactId>docker-maven-plugin</artifactId>
