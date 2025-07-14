@@ -33,14 +33,43 @@
     <properties>
         <docker.skip-build>false</docker.skip-build>
         <docker.skip-test>true</docker.skip-test>
+        <confluent.platform.version>8.0.0</confluent.platform.version>
+        <jolokia-jvm.version>1.7.1</jolokia-jvm.version>
+        <jmx_prometheus_javaagent.version>0.20.0</jmx_prometheus_javaagent.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <groupId>io.confluent</groupId>
+            <artifactId>utility-belt</artifactId>
+            <version>${confluent.platform.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.jolokia</groupId>
+            <artifactId>jolokia-jvm</artifactId>
+            <version>${jolokia-jvm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus.jmx</groupId>
+            <artifactId>jmx_prometheus_javaagent</artifactId>
+            <version>${jmx_prometheus_javaagent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>disk-usage-agent</artifactId>
+            <version>${confluent.platform.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.confluent</groupId>-->
+<!--            <artifactId>logredactor</artifactId>-->
+<!--            <version>${confluent.platform.version}</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
