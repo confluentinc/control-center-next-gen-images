@@ -87,10 +87,8 @@ enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && mkdir -p "${CONTROL_CENTER_DATA_DIR}" \
     && chown appuser:root -R "${CONTROL_CENTER_DATA_DIR}" \
     && chown appuser:root -R "${CONTROL_CENTER_CONFIG_DIR}" \
-    && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}"
-
-
-RUN rm /usr/lib/systemd/system/prometheus.service && \
+    && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}" \
+    && rm /usr/lib/systemd/system/prometheus.service && \
     rm -r /usr/libexec/confluent-control-center/linux_*/prometheus && \
     rm /usr/lib/systemd/system/alertmanager.service && \
     rm -r /usr/libexec/confluent-control-center/linux_*/alertmanager
