@@ -65,11 +65,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>io.confluent</groupId>-->
-<!--            <artifactId>logredactor</artifactId>-->
-<!--            <version>${confluent.platform.version}</version>-->
-<!--        </dependency>-->
     </dependencies>
 
     <build>

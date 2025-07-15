@@ -29,6 +29,7 @@
 
   <properties>
     <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
+    <maven-assembly.version>3.3.0</maven-assembly.version>
 
     <component.name>control-center</component.name>
     <io.confluent.control-center-next-gen-images.version>2.3.0-0</io.confluent.control-center-next-gen-images.version>
@@ -82,14 +83,36 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <dependencies>
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.13.2</version>
-        <scope>test</scope>
-      </dependency>
-    </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven-assembly.version}</version>
+        <executions>
+          <execution>
+            <id>make-assembly-for-docker</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <skipAssembly>${docker.skip-build}</skipAssembly>
+              <descriptors>
+                <descriptor>assembly/src.xml</descriptor>
+              </descriptors>
+              <archive>
+                <manifest>
+                  <mainClass>${main-class}</mainClass>
+                </manifest>
+              </archive>
+              <attach>false</attach>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
     <profiles>
         <profile>
