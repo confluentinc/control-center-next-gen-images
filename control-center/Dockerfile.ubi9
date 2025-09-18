@@ -14,9 +14,12 @@
 # limitations under the License.
 
 ARG DOCKER_UPSTREAM_REGISTRY
-ARG DOCKER_UPSTREAM_TAG=ubi9-latest
+ARG DOCKER_UPSTREAM_TAG=latest
+ARG UBI_MINIMAL_VERSION
 
-FROM ${DOCKER_UPSTREAM_REGISTRY}confluentinc/cp-base-java:${DOCKER_UPSTREAM_TAG}
+FROM ${DOCKER_UPSTREAM_REGISTRY}confluentinc/cp-base-java:${DOCKER_UPSTREAM_TAG} as cp-base
+
+FROM registry.access.redhat.com/ubi9-minimal:${UBI_MINIMAL_VERSION}
 
 ARG PROJECT_VERSION
 ARG ARTIFACT_ID
@@ -49,6 +52,27 @@ ARG CONFLUENT_PLATFORM_LABEL
 
 USER root
 
+COPY --from=cp-base /usr/bin/ub /usr/bin/ub
+
+RUN printf "[temurin-jre] \n\
+name=temurin-jre \n\
+baseurl=https://adoptium.jfrog.io/artifactory/rpm/rhel/\$releasever/\$basearch \n\
+enabled=1 \n\
+gpgcheck=1 \n\
+gpgkey=https://adoptium.jfrog.io/artifactory/api/gpg/key/public \n\
+" > /etc/yum.repos.d/adoptium.repo
+
+RUN echo "Initial setup " \
+    && echo "installing temurin-21-jre:${TEMURIN_JDK_VERSION}" \
+    && microdnf install -y temurin-21-jre${TEMURIN_JDK_VERSION} \
+    && useradd --no-log-init --create-home --shell /bin/bash appuser \
+    && mkdir -p /etc/confluent/docker /usr/logs \
+    && chown appuser:appuser -R /etc/confluent/ /usr/logs \
+    && mkdir /licenses \
+    && echo "removing temurin-jre repo to reduce intermittent failures" \
+    && rm /etc/yum.repos.d/adoptium.repo \
+    && echo "Initial setup complete"
+
 RUN echo "===> Installing ${COMPONENT}..." \
     && rpm --import ${CONFLUENT_PACKAGES_REPO}/archive.key \
     && printf "[Confluent] \n\
@@ -58,8 +82,6 @@ gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && microdnf install -y confluent-${COMPONENT}-${C3_VERSION} \
-    && echo "===> Deduping jars present in /usr/share/java ..." \
-    && package_dedupe /usr/share/java \
     && echo "===> Cleaning up ..."  \
     && microdnf clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
@@ -67,13 +89,15 @@ enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && mkdir -p "${CONTROL_CENTER_DATA_DIR}" \
     && chown appuser:root -R "${CONTROL_CENTER_DATA_DIR}" \
     && chown appuser:root -R "${CONTROL_CENTER_CONFIG_DIR}" \
-    && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}"
-
-
-RUN rm /usr/lib/systemd/system/prometheus.service && \
+    && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}" \
+    && rm /usr/lib/systemd/system/prometheus.service && \
     rm -r /usr/libexec/confluent-control-center/linux_*/prometheus && \
     rm /usr/lib/systemd/system/alertmanager.service && \
     rm -r /usr/libexec/confluent-control-center/linux_*/alertmanager
+
+# Copying jars that are required for the base image paths
+COPY --chown=appuser:appuser target/${ARTIFACT_ID}-${PROJECT_VERSION}-package/share/java/${ARTIFACT_ID}/* /usr/share/java/cp-base-java/
+RUN ln -s /usr/share/java/cp-base-java /usr/share/java/cp-base-new
 
 COPY --chown=appuser:appuser include/etc/confluent/docker /etc/confluent/docker
 
