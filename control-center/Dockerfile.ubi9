@@ -104,6 +104,10 @@ enabled=1 " > /etc/yum.repos.d/confluent.repo \
     rm /usr/lib/systemd/system/alertmanager.service && \
     rm -r /usr/libexec/confluent-control-center/linux_*/alertmanager
 
+# Copy files from target package to cp-base-new directory for backward compatibility (some paths are hardcoded in CFK startups scripts)
+COPY --chown=appuser:appuser target/${ARTIFACT_ID}-${PROJECT_VERSION}-package/share/doc/* /usr/share/doc/cp-base-new/
+COPY --chown=appuser:appuser target/${ARTIFACT_ID}-${PROJECT_VERSION}-package/share/java/${ARTIFACT_ID}/* /usr/share/java/cp-base-new/
+
 # Copy configuration files
 COPY --chown=appuser:appuser include/etc/confluent/docker /etc/confluent/docker
 COPY license.txt /licenses/

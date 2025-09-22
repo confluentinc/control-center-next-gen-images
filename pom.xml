@@ -21,7 +21,7 @@
 
     <parent>
         <groupId>io.confluent</groupId>
-        <artifactId>common-docker</artifactId>
+        <artifactId>common</artifactId>
         <version>[8.0.1-0, 8.0.2-0)</version>
     </parent>
 
@@ -37,6 +37,7 @@
         <module>prometheus</module>
         <module>alertmanager</module>
     </modules>
+
     <build>
         <plugins>
             <plugin>
