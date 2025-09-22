@@ -15,13 +15,13 @@
 
 # Stage 1: Build Go utilities
 ARG GOLANG_VERSION
+ARG UBI_MINIMAL_VERSION
 FROM docker.io/golang:${GOLANG_VERSION} AS build-utilities
 
 ENV GO_BIN="/go/bin"
 RUN go install github.com/confluentinc/cp-docker-utils/cmd/ub@master
 
 # Stage 2: Final image with cp-base-java functionality + Control Center
-ARG UBI_MINIMAL_VERSION
 FROM registry.access.redhat.com/ubi9-minimal:${UBI_MINIMAL_VERSION}
 
 # Combined ARG declarations

@@ -48,7 +48,7 @@
                         <ARCH>${arch.type}</ARCH>
                         <C3_VERSION>${C3_VERSION}</C3_VERSION>
                         <GOLANG_VERSION>${golang.version}</GOLANG_VERSION>
-                        <TEMURIN_JDK_VERSION>${temurin.jdk.version}</TEMURIN_JDK_VERSION>
+                        <TEMURIN_JDK_VERSION>-${temurin.jdk.version}</TEMURIN_JDK_VERSION>
                         <CONFLUENT_PACKAGES_REPO>${CONFLUENT_PACKAGES_REPO}</CONFLUENT_PACKAGES_REPO>
                     </buildArgs>
                 </configuration>
@@ -65,7 +65,7 @@
                       <ARCH>${arch.type}</ARCH>
                       <C3_VERSION>${C3_VERSION}</C3_VERSION>
                       <GOLANG_VERSION>${golang.version}</GOLANG_VERSION>
-                      <TEMURIN_JDK_VERSION>${temurin.jdk.version}</TEMURIN_JDK_VERSION>
+                      <TEMURIN_JDK_VERSION>-${temurin.jdk.version}</TEMURIN_JDK_VERSION>
                       <CONFLUENT_PACKAGES_REPO>${CONFLUENT_PACKAGES_REPO}</CONFLUENT_PACKAGES_REPO>
                     </args>
                   </build>
@@ -85,9 +85,9 @@
         <docker.file>Dockerfile.ubi9</docker.file>
         
         <!-- New properties for our custom Dockerfile -->
-        <ubi9.minimal.image.version>9.4</ubi9.minimal.image.version>
+        <ubi9.minimal.image.version>9.4-1194</ubi9.minimal.image.version>
         <golang.version>1.24</golang.version>
-        <temurin.jdk.version>-21.0.4+7</temurin.jdk.version>
+        <temurin.jdk.version>21.0.8.0.0.9-1</temurin.jdk.version>
         
         <!-- Override problematic Docker registry settings -->
         <docker.registry>docker.io</docker.registry>
