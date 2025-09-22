@@ -34,8 +34,8 @@
 
    <modules>
         <module>control-center</module>
-        <module>prometheus</module>
-        <module>alertmanager</module>
+<!--        <module>prometheus</module>-->
+<!--        <module>alertmanager</module>-->
     </modules>
     <build>
         <plugins>
@@ -45,9 +45,11 @@
                 <configuration>
                     <buildArgs>
                         <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
-                        <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
                         <ARCH>${arch.type}</ARCH>
-                      <C3_VERSION>${C3_VERSION}</C3_VERSION>
+                        <C3_VERSION>${C3_VERSION}</C3_VERSION>
+                        <GOLANG_VERSION>${golang.version}</GOLANG_VERSION>
+                        <TEMURIN_JDK_VERSION>${temurin.jdk.version}</TEMURIN_JDK_VERSION>
+                        <CONFLUENT_PACKAGES_REPO>${CONFLUENT_PACKAGES_REPO}</CONFLUENT_PACKAGES_REPO>
                     </buildArgs>
                 </configuration>
             </plugin>
@@ -60,9 +62,11 @@
                   <build>
                     <args>
                       <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
-                      <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
                       <ARCH>${arch.type}</ARCH>
                       <C3_VERSION>${C3_VERSION}</C3_VERSION>
+                      <GOLANG_VERSION>${golang.version}</GOLANG_VERSION>
+                      <TEMURIN_JDK_VERSION>${temurin.jdk.version}</TEMURIN_JDK_VERSION>
+                      <CONFLUENT_PACKAGES_REPO>${CONFLUENT_PACKAGES_REPO}</CONFLUENT_PACKAGES_REPO>
                     </args>
                   </build>
                 </image>
@@ -79,5 +83,15 @@
         <!--  This is a placeholder for the architecture of the image that we will need from input
          and the input will come in mvn command from semaphore.yml file -->
         <docker.file>Dockerfile.ubi9</docker.file>
+        
+        <!-- New properties for our custom Dockerfile -->
+        <ubi9.minimal.image.version>9.4</ubi9.minimal.image.version>
+        <golang.version>1.24</golang.version>
+        <temurin.jdk.version>-21.0.4+7</temurin.jdk.version>
+        
+        <!-- Override problematic Docker registry settings -->
+        <docker.registry>docker.io</docker.registry>
+        <docker.upstream-registry>docker.io</docker.upstream-registry>
+        <docker.skip-build>true</docker.skip-build>
     </properties>
 </project>
