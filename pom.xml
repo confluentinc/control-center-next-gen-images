@@ -34,8 +34,8 @@
 
    <modules>
         <module>control-center</module>
-<!--        <module>prometheus</module>-->
-<!--        <module>alertmanager</module>-->
+        <module>prometheus</module>
+        <module>alertmanager</module>
     </modules>
     <build>
         <plugins>
@@ -45,6 +45,7 @@
                 <configuration>
                     <buildArgs>
                         <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
+                        <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
                         <ARCH>${arch.type}</ARCH>
                         <C3_VERSION>${C3_VERSION}</C3_VERSION>
                         <GOLANG_VERSION>${golang.version}</GOLANG_VERSION>
@@ -62,6 +63,7 @@
                   <build>
                     <args>
                       <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
+                      <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
                       <ARCH>${arch.type}</ARCH>
                       <C3_VERSION>${C3_VERSION}</C3_VERSION>
                       <GOLANG_VERSION>${golang.version}</GOLANG_VERSION>
@@ -86,6 +88,7 @@
         
         <!-- New properties for our custom Dockerfile -->
         <ubi9.minimal.image.version>9.4-1194</ubi9.minimal.image.version>
+        <ubi9.micro.image.version>9.6-1754345610</ubi9.micro.image.version>
         <golang.version>1.24</golang.version>
         <temurin.jdk.version>21.0.8.0.0.9-1</temurin.jdk.version>
         
