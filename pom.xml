@@ -34,8 +34,8 @@
 
    <modules>
         <module>control-center</module>
-        <module>prometheus</module>
-        <module>alertmanager</module>
+<!--        <module>prometheus</module>-->
+<!--        <module>alertmanager</module>-->
     </modules>
     <build>
         <plugins>
