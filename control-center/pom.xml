@@ -33,6 +33,9 @@
     <properties>
         <docker.skip-build>false</docker.skip-build>
         <docker.skip-test>true</docker.skip-test>
+        <!-- Override parent Docker registry settings for this module -->
+        <docker.registry>docker.io</docker.registry>
+        <docker.upstream-registry>docker.io</docker.upstream-registry>
     </properties>
 
     <dependencies>
