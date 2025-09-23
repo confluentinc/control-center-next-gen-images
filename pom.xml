@@ -51,7 +51,6 @@
                         <C3_VERSION>${C3_VERSION}</C3_VERSION>
                         <GOLANG_VERSION>${golang.version}</GOLANG_VERSION>
                         <TEMURIN_JDK_VERSION>-${temurin.jdk.version}</TEMURIN_JDK_VERSION>
-                        <CONFLUENT_PACKAGES_REPO>${CONFLUENT_PACKAGES_REPO}</CONFLUENT_PACKAGES_REPO>
                     </buildArgs>
                 </configuration>
             </plugin>
@@ -69,7 +68,6 @@
                       <C3_VERSION>${C3_VERSION}</C3_VERSION>
                       <GOLANG_VERSION>${golang.version}</GOLANG_VERSION>
                       <TEMURIN_JDK_VERSION>-${temurin.jdk.version}</TEMURIN_JDK_VERSION>
-                      <CONFLUENT_PACKAGES_REPO>${CONFLUENT_PACKAGES_REPO}</CONFLUENT_PACKAGES_REPO>
                     </args>
                   </build>
                 </image>
@@ -83,8 +81,6 @@
         <component.name>control-center</component.name>
         <io.confluent.control-center-next-gen-images.version>2.2.1-0</io.confluent.control-center-next-gen-images.version>
         <arch.type>.arm64</arch.type>
-        <!--  This is a placeholder for the architecture of the image that we will need from input
-         and the input will come in mvn command from semaphore.yml file -->
         <docker.file>Dockerfile.ubi9</docker.file>
         
         <!-- New properties for our custom Dockerfile -->
@@ -92,10 +88,5 @@
         <ubi9.micro.image.version>9.6-1754345610</ubi9.micro.image.version>
         <golang.version>1.24</golang.version>
         <temurin.jdk.version>21.0.8.0.0.9-1</temurin.jdk.version>
-        
-        <!-- Override problematic Docker registry settings -->
-        <docker.registry>docker.io</docker.registry>
-        <docker.upstream-registry>docker.io</docker.upstream-registry>
-        <docker.skip-build>true</docker.skip-build>
     </properties>
-</project>
+</project>`
