@@ -37,7 +37,6 @@
         <module>prometheus</module>
         <module>alertmanager</module>
     </modules>
-
     <build>
         <plugins>
             <plugin>
