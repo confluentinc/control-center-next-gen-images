@@ -89,4 +89,4 @@
         <golang.version>1.24</golang.version>
         <temurin.jdk.version>21.0.8.0.0.9-1</temurin.jdk.version>
     </properties>
-</project>`
+</project>
