@@ -87,7 +87,6 @@ COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/promet
 COPY --from=builder /etc/confluent-control-center/ /etc/confluent-control-center/
 COPY --from=builder /usr/bin/prometheus-start /usr/bin/prometheus-start
 COPY --from=builder /usr/bin/prometheus-stop /usr/bin/prometheus-stop
-COPY --from=builder /licenses /licenses
 COPY --from=builder /etc/pki/ca-trust /etc/pki/ca-trust
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 

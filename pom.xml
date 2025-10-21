@@ -79,6 +79,8 @@
     <properties>
         <component.name>control-center</component.name>
         <io.confluent.control-center-next-gen-images.version>2.3.0-0</io.confluent.control-center-next-gen-images.version>
+        <!--  This is a placeholder for the architecture of the image that we will need from input
+         and the input will come in mvn command from semaphore.yml file -->
         <arch.type>.arm64</arch.type>
         <docker.file>Dockerfile.ubi9</docker.file>
         
