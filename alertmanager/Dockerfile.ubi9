@@ -52,8 +52,7 @@ enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && mkdir -p "${CONTROL_CENTER_DATA_DIR}" \
     && chown appuser:root -R "${CONTROL_CENTER_DATA_DIR}" \
     && chown appuser:root -R "${CONTROL_CENTER_CONFIG_DIR}" \
-    && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}" \
-    && mkdir /licenses
+    && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}"
 
 FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MICRO_VERSION}
 WORKDIR /app
@@ -92,6 +91,9 @@ COPY --from=builder /etc/pki/ca-trust /etc/pki/ca-trust
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 
 EXPOSE 9093
+
+RUN mkdir /licenses
+COPY license.txt /licenses/
 
 RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/alertmanager-${ARCH#.}
 WORKDIR /usr/bin
