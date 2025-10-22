@@ -37,6 +37,41 @@
         <module>prometheus</module>
         <module>alertmanager</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>utility-belt</artifactId>
+                <version>8.1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jolokia</groupId>
+                <artifactId>jolokia-jvm</artifactId>
+                <version>${jolokia-jvm.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>io.prometheus.jmx</groupId>
+                <artifactId>jmx_prometheus_javaagent</artifactId>
+                <version>${jmx_prometheus_javaagent.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>disk-usage-agent</artifactId>
+                <version>${io.confluent.common.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
         <plugins>
             <plugin>

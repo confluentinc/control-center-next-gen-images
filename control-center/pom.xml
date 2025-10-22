@@ -42,7 +42,22 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Dependencies from common-docker base image -->
+        <!-- Java dependencies of cp-base-java docker image -->
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>utility-belt</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-reload4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>logredactor</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jolokia</groupId>
             <artifactId>jolokia-jvm</artifactId>
