@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG DOCKER_UPSTREAM_REGISTRY
-ARG DOCKER_UPSTREAM_TAG=ubi9-latest
+ARG UBI_MINIMAL_VERSION
 ARG UBI_MICRO_VERSION
 
-FROM ${DOCKER_UPSTREAM_REGISTRY}confluentinc/cp-base-java:${DOCKER_UPSTREAM_TAG} as builder
+FROM registry.access.redhat.com/ubi9-minimal:${UBI_MINIMAL_VERSION} as builder
 
 ARG PROJECT_VERSION
 ARG ARTIFACT_ID
@@ -44,6 +43,8 @@ gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && microdnf install -y confluent-${COMPONENT}-${C3_VERSION} \
     && microdnf install -y ca-certificates \
+    && echo "===> Creating appuser..." \
+    && useradd --no-log-init --create-home --shell /bin/bash appuser \
     && echo "===> Cleaning up ..."  \
     && microdnf clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
@@ -85,11 +86,13 @@ COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertm
 COPY --from=builder /etc/confluent-control-center/ /etc/confluent-control-center/
 COPY --from=builder /usr/bin/alertmanager-start /usr/bin/alertmanager-start
 COPY --from=builder /usr/bin/alertmanager-stop /usr/bin/alertmanager-stop
-COPY --from=builder /licenses /licenses
 COPY --from=builder /etc/pki/ca-trust /etc/pki/ca-trust
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 
 EXPOSE 9093
+
+RUN mkdir /licenses
+COPY license.txt /licenses/
 
 RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/alertmanager-${ARCH#.}
 WORKDIR /usr/bin
