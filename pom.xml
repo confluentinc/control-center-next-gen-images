@@ -21,7 +21,7 @@
 
     <parent>
         <groupId>io.confluent</groupId>
-        <artifactId>common-docker</artifactId>
+        <artifactId>common</artifactId>
         <version>[8.1.0-0, 8.1.1-0)</version>
     </parent>
 
@@ -37,6 +37,41 @@
         <module>prometheus</module>
         <module>alertmanager</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>utility-belt</artifactId>
+                <version>8.1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jolokia</groupId>
+                <artifactId>jolokia-jvm</artifactId>
+                <version>${jolokia-jvm.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>io.prometheus.jmx</groupId>
+                <artifactId>jmx_prometheus_javaagent</artifactId>
+                <version>${jmx_prometheus_javaagent.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>disk-usage-agent</artifactId>
+                <version>${io.confluent.common.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -44,10 +79,12 @@
                 <artifactId>dockerfile-maven-plugin</artifactId>
                 <configuration>
                     <buildArgs>
-                        <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
-                        <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
+                        <UBI_MINIMAL_VERSION>${ubi9-minimal.image.version}</UBI_MINIMAL_VERSION>
+                        <UBI_MICRO_VERSION>${ubi9-micro.image.version}</UBI_MICRO_VERSION>
                         <ARCH>${arch.type}</ARCH>
-                      <C3_VERSION>${C3_VERSION}</C3_VERSION>
+                        <C3_VERSION>${C3_VERSION}</C3_VERSION>
+                        <GOLANG_VERSION>${golang.image.version}</GOLANG_VERSION>
+                        <TEMURIN_JDK_VERSION>-${ubi9-minimal.temurin-21-jdk.version}</TEMURIN_JDK_VERSION>
                     </buildArgs>
                 </configuration>
             </plugin>
@@ -59,10 +96,12 @@
                 <image>
                   <build>
                     <args>
-                      <UBI_MINIMAL_VERSION>${ubi9.minimal.image.version}</UBI_MINIMAL_VERSION>
-                      <UBI_MICRO_VERSION>${ubi9.micro.image.version}</UBI_MICRO_VERSION>
+                      <UBI_MINIMAL_VERSION>${ubi9-minimal.image.version}</UBI_MINIMAL_VERSION>
+                      <UBI_MICRO_VERSION>${ubi9-micro.image.version}</UBI_MICRO_VERSION>
                       <ARCH>${arch.type}</ARCH>
                       <C3_VERSION>${C3_VERSION}</C3_VERSION>
+                      <GOLANG_VERSION>${golang.image.version}</GOLANG_VERSION>
+                      <TEMURIN_JDK_VERSION>-${ubi9-minimal.temurin-21-jdk.version}</TEMURIN_JDK_VERSION>
                     </args>
                   </build>
                 </image>
@@ -75,9 +114,15 @@
     <properties>
         <component.name>control-center</component.name>
         <io.confluent.control-center-next-gen-images.version>2.4.0-0</io.confluent.control-center-next-gen-images.version>
-        <arch.type>.arm64</arch.type>
         <!--  This is a placeholder for the architecture of the image that we will need from input
          and the input will come in mvn command from semaphore.yml file -->
+        <arch.type>.arm64</arch.type>
         <docker.file>Dockerfile.ubi9</docker.file>
+        
+        <!-- New properties for our custom Dockerfile -->
+        <ubi9-minimal.image.version>9.4-1194</ubi9-minimal.image.version>
+        <ubi9-micro.image.version>9.6-1754345610</ubi9-micro.image.version>
+        <ubi9-minimal.temurin-21-jdk.version>21.0.8.0.0.9-1</ubi9-minimal.temurin-21-jdk.version>
+        <golang.image.version>1.24</golang.image.version>
     </properties>
 </project>
