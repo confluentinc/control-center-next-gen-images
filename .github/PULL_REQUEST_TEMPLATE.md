@@ -31,9 +31,9 @@
 2. **Update cp-all-in-one docker-compose.yml:**
    - Clone or access: https://github.com/confluentinc/cp-all-in-one
    - Update the Control Center image in the docker-compose.yml file at these locations:
-     - [Line 94](https://github.com/confluentinc/cp-all-in-one/blob/8.0.0-post/cp-all-in-one/docker-compose.yml#L94)
-     - [Line 106](https://github.com/confluentinc/cp-all-in-one/blob/8.0.0-post/cp-all-in-one/docker-compose.yml#L106)
-     - [Line 120](https://github.com/confluentinc/cp-all-in-one/blob/8.0.0-post/cp-all-in-one/docker-compose.yml#L120)
+     - [Line 94](https://github.com/confluentinc/cp-all-in-one/blob/master/cp-all-in-one/docker-compose.yml#L120)
+     - [Line 106](https://github.com/confluentinc/cp-all-in-one/blob/master/cp-all-in-one/docker-compose.yml#L106)
+     - [Line 120](https://github.com/confluentinc/cp-all-in-one/blob/master/cp-all-in-one/docker-compose.yml#L94)
    - Replace the existing Control Center image with your built image URL from Step 1
 
 **📸 Screenshot Required:** Modified docker-compose.yml showing the updated image references
