@@ -21,7 +21,7 @@ ARG CP_DOCKER_UTILS_VERSION
 
 ENV GO_BIN="/go/bin"
 RUN CGO_ENABLED=0 go install -ldflags="-w -s" github.com/confluentinc/cp-docker-utils/cmd/ub@${CP_DOCKER_UTILS_VERSION}
-RUN CGO_ENABLED=0 go install -ldflags="-w -s" github.com/confluentinc/cp-docker-utils/cmd/package_dedupe@add_pacakge_dedupe
+RUN CGO_ENABLED=0 go install -ldflags="-w -s" github.com/confluentinc/cp-docker-utils/cmd/package_dedupe@${CP_DOCKER_UTILS_VERSION}
 
 
 FROM registry.access.redhat.com/ubi9-minimal:${UBI_MINIMAL_VERSION}
