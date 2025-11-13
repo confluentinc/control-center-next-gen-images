@@ -17,8 +17,11 @@ ARG GOLANG_VERSION
 ARG UBI_MINIMAL_VERSION
 FROM docker.io/golang:${GOLANG_VERSION} AS build-utilities
 
+ARG CP_DOCKER_UTILS_VERSION
+
 ENV GO_BIN="/go/bin"
-RUN go install github.com/confluentinc/cp-docker-utils/cmd/ub@master
+RUN CGO_ENABLED=0 go install -ldflags="-w -s" github.com/confluentinc/cp-docker-utils/cmd/ub@${CP_DOCKER_UTILS_VERSION}
+RUN CGO_ENABLED=0 go install -ldflags="-w -s" github.com/confluentinc/cp-docker-utils/cmd/package_dedupe@add_pacakge_dedupe
 
 
 FROM registry.access.redhat.com/ubi9-minimal:${UBI_MINIMAL_VERSION}
@@ -73,6 +76,7 @@ gpgkey=https://adoptium.jfrog.io/artifactory/api/gpg/key/public \n\
     && rm /etc/yum.repos.d/adoptium.repo
 
 COPY --from=build-utilities /go/bin/ub /usr/bin/ub
+COPY --from=build-utilities /go/bin/package_dedupe /usr/bin/package_dedupe
 
 RUN echo "===> Installing ${COMPONENT}..." \
     && rpm --import ${CONFLUENT_PACKAGES_REPO}/archive.key \
@@ -83,6 +87,8 @@ gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && microdnf install -y confluent-${COMPONENT}-${C3_VERSION} \
+    && echo "===> Deduping jars present in /usr/share/java ..." \
+    && package_dedupe /usr/share/java \
     && echo "===> Cleaning up ..." \
     && microdnf clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
