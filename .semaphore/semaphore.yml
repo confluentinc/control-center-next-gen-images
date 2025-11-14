@@ -36,9 +36,9 @@ global_job_config:
       - export PACKAGES_URL="https://s3-us-west-2.amazonaws.com/dev-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/$BRANCH_TAG/$LATEST_PACKAGING_BUILD_NUMBER/PACKAGE_TYPE"
       # For PR getting merged in RC branches, use staging packages
       - |
-      - if [[ $SEMAPHORE_GIT_BRANCH =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$ ]]; then
-      - export PACKAGES_URL="https://s3-us-west-2.amazonaws.com/staging-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/PACKAGE_TYPE"
-      - fi
+        if [[ $SEMAPHORE_GIT_BRANCH =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$ ]]; then
+          export PACKAGES_URL="https://s3-us-west-2.amazonaws.com/staging-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/PACKAGE_TYPE"
+        fi
       - 'echo "PACKAGES_URL: ${PACKAGES_URL}"'
       - export PACKAGING_BUILD_NUMBER=$LATEST_PACKAGING_BUILD_NUMBER
       - >-
