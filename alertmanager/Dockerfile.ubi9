@@ -14,15 +14,14 @@
 # limitations under the License.
 
 ARG DOCKER_UPSTREAM_REGISTRY
-ARG DOCKER_UPSTREAM_TAG=ubi8-latest
-ARG UBI_MINIMAL_VERSION
+ARG DOCKER_UPSTREAM_TAG=ubi9-latest
+ARG UBI_MICRO_VERSION
 
-FROM ${DOCKER_UPSTREAM_REGISTRY}confluentinc/cp-base-new:${DOCKER_UPSTREAM_TAG} as builder
+FROM ${DOCKER_UPSTREAM_REGISTRY}confluentinc/cp-base-java:${DOCKER_UPSTREAM_TAG} as builder
 
 ARG PROJECT_VERSION
 ARG ARTIFACT_ID
 ARG GIT_COMMIT
-
 
 ENV COMPONENT=control-center-next-gen
 ENV OLD_COMPONENT_NAME=control-center
@@ -44,6 +43,7 @@ gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && microdnf install -y confluent-${COMPONENT}-${C3_VERSION} \
+    && microdnf install -y ca-certificates \
     && echo "===> Cleaning up ..."  \
     && microdnf clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
@@ -53,7 +53,7 @@ enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && chown appuser:root -R "${CONTROL_CENTER_CONFIG_DIR}" \
     && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}"
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:${UBI_MINIMAL_VERSION}
+FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MICRO_VERSION}
 WORKDIR /app
 USER root
 
@@ -69,28 +69,29 @@ LABEL vendor="Confluent"
 LABEL version=$GIT_COMMIT
 LABEL release=$PROJECT_VERSION
 LABEL name=$ARTIFACT_ID
-LABEL summary="Prometheus is a monitoring system and time series database, used as backend for Next Gen C3"
-LABEL description="Prometheus is a monitoring system and time series database, used as backend for Next Gen C3"
+LABEL summary="Alertmanager is an alerting system that integrates with Prometheus, used as backend for Next Gen C3"
+LABEL description="Alertmanager is an alerting system that integrates with Prometheus, used as backend for Next Gen C3"
 LABEL io.confluent.docker=true
 LABEL io.confluent.docker.git.id=$GIT_COMMIT
 ARG BUILD_NUMBER=-1
 LABEL io.confluent.docker.build.number=$BUILD_NUMBER
 LABEL io.confluent.docker.git.repo="confluentinc/control-center-images"
 
-RUN mkdir -p /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus && \
+RUN mkdir -p /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager && \
     mkdir -p /etc/confluent-control-center
 
-
-COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/ /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/
+# Use the cleaned ARCH variable in subsequent commands
+COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/ /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/
 COPY --from=builder /etc/confluent-control-center/ /etc/confluent-control-center/
-COPY --from=builder /usr/bin/prometheus-start /usr/bin/prometheus-start
-COPY --from=builder /usr/bin/prometheus-stop /usr/bin/prometheus-stop
+COPY --from=builder /usr/bin/alertmanager-start /usr/bin/alertmanager-start
+COPY --from=builder /usr/bin/alertmanager-stop /usr/bin/alertmanager-stop
 COPY --from=builder /licenses /licenses
+COPY --from=builder /etc/pki/ca-trust /etc/pki/ca-trust
+COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 
+EXPOSE 9093
 
-EXPOSE 9090
-
-RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/prometheus-${ARCH#.}
+RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/alertmanager-${ARCH#.}
 WORKDIR /usr/bin
 
 
@@ -98,18 +99,18 @@ RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
     mkdir -p /home/appuser && \
     chown 1000:1000 /home/appuser
 
-ENV EXE_PATH="/usr/libexec/confluent-control-center"
 
-## Creating the default log directory and data directory utilized by the script to ensure that Prometheus
+## Creating the default log directory and data directory utilized by the script to ensure that Alertmanager
 ## can write data during its execution.
 ## Limitation: Customers are restricted from changing the log and data paths to alternative directories; however,
 ## they are permitted to mount a volume and write data to it.
 ## Security Practice: Adheres to the principle of least privilege.
-RUN mkdir -p /var/lib/confluent/control-center/prometheus/data && \
+RUN mkdir -p /var/lib/confluent/control-center/alertmanager/ && \
     mkdir -p /var/log/confluent/control-center && \
-    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data /var/log/confluent/control-center
-
+    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center
 USER appuser
 
 VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
-ENTRYPOINT ["prometheus-start"]
+ENTRYPOINT [ "alertmanager-start" ]
+
+

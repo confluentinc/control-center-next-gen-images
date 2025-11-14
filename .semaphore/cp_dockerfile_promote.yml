@@ -63,12 +63,12 @@ blocks:
     dependencies: []
     task:
       jobs:
-        - name: Promote confluentinc/cp-enterprise-control-center-next-gen ubi8 AMD
+        - name: Promote confluentinc/cp-enterprise-control-center-next-gen ubi9 AMD
           env_vars:
             - name: DOCKER_IMAGE
               value: confluentinc/cp-enterprise-control-center-next-gen
           commands:
-            - export OS_TYPE="ubi8"
+            - export OS_TYPE="ubi9"
             - export DOCKER_REPO="confluentinc/cp-enterprise-control-center-next-gen"
             - if [[ ! "$OS_TYPE" ]]; then export OS_TAG=""; elif [[ "$OS_TYPE" =~ $PROMOTE_OS_TYPE* ]]; then export OS_TAG="-$OS_TYPE"; fi
             - export INTERNAL_IMAGE_TAG="$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG$AMD_ARCH"
@@ -94,12 +94,12 @@ blocks:
                   docker tag $DOCKER_REPO:$PROMOTED_TAG $DOCKER_REPO:latest-$OS_TYPE$AMD_ARCH
                   docker push $DOCKER_REPO:latest-$OS_TYPE$AMD_ARCH
               fi
-        - name: Promote confluentinc/cp-enterprise-prometheus ubi8 AMD
+        - name: Promote confluentinc/cp-enterprise-prometheus ubi9 AMD
           env_vars:
             - name: DOCKER_IMAGE
               value: confluentinc/cp-enterprise-prometheus
           commands:
-            - export OS_TYPE="ubi8"
+            - export OS_TYPE="ubi9"
             - export DOCKER_REPO="confluentinc/cp-enterprise-prometheus"
             - if [[ ! "$OS_TYPE" ]]; then export OS_TAG=""; elif [[ "$OS_TYPE" =~ $PROMOTE_OS_TYPE* ]]; then export OS_TAG="-$OS_TYPE"; fi
             - export INTERNAL_IMAGE_TAG="$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG$AMD_ARCH"
@@ -125,12 +125,12 @@ blocks:
                   docker tag $DOCKER_REPO:$PROMOTED_TAG $DOCKER_REPO:latest-$OS_TYPE$AMD_ARCH
                   docker push $DOCKER_REPO:latest-$OS_TYPE$AMD_ARCH
               fi
-        - name: Promote confluentinc/cp-enterprise-alertmanager ubi8 AMD
+        - name: Promote confluentinc/cp-enterprise-alertmanager ubi9 AMD
           env_vars:
             - name: DOCKER_IMAGE
               value: confluentinc/cp-enterprise-alertmanager
           commands:
-            - export OS_TYPE="ubi8"
+            - export OS_TYPE="ubi9"
             - export DOCKER_REPO="confluentinc/cp-enterprise-alertmanager"
             - if [[ ! "$OS_TYPE" ]]; then export OS_TAG=""; elif [[ "$OS_TYPE" =~ $PROMOTE_OS_TYPE* ]]; then export OS_TAG="-$OS_TYPE"; fi
             - export INTERNAL_IMAGE_TAG="$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG$AMD_ARCH"
@@ -160,12 +160,12 @@ blocks:
     dependencies: []
     task:
       jobs:
-        - name: Promote confluentinc/cp-enterprise-control-center-next-gen ubi8 ARM
+        - name: Promote confluentinc/cp-enterprise-control-center-next-gen ubi9 ARM
           env_vars:
             - name: DOCKER_IMAGE
               value: confluentinc/cp-enterprise-control-center-next-gen
           commands:
-            - export OS_TYPE="ubi8"
+            - export OS_TYPE="ubi9"
             - export DOCKER_REPO="confluentinc/cp-enterprise-control-center-next-gen"
             - if [[ ! "$OS_TYPE" ]]; then export OS_TAG=""; elif [[ "$OS_TYPE" =~ $PROMOTE_OS_TYPE* ]]; then export OS_TAG="-$OS_TYPE"; fi
             - export INTERNAL_IMAGE_TAG="$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG$ARM_ARCH"
@@ -191,12 +191,12 @@ blocks:
                   docker tag $DOCKER_REPO:$PROMOTED_TAG $DOCKER_REPO:latest-$OS_TYPE$ARM_ARCH
                   docker push $DOCKER_REPO:latest-$OS_TYPE$ARM_ARCH
               fi
-        - name: Promote confluentinc/cp-enterprise-prometheus ubi8 ARM
+        - name: Promote confluentinc/cp-enterprise-prometheus ubi9 ARM
           env_vars:
             - name: DOCKER_IMAGE
               value: confluentinc/cp-enterprise-prometheus
           commands:
-            - export OS_TYPE="ubi8"
+            - export OS_TYPE="ubi9"
             - export DOCKER_REPO="confluentinc/cp-enterprise-prometheus"
             - if [[ ! "$OS_TYPE" ]]; then export OS_TAG=""; elif [[ "$OS_TYPE" =~ $PROMOTE_OS_TYPE* ]]; then export OS_TAG="-$OS_TYPE"; fi
             - export INTERNAL_IMAGE_TAG="$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG$ARM_ARCH"
@@ -222,12 +222,12 @@ blocks:
                   docker tag $DOCKER_REPO:$PROMOTED_TAG $DOCKER_REPO:latest-$OS_TYPE$ARM_ARCH
                   docker push $DOCKER_REPO:latest-$OS_TYPE$ARM_ARCH
               fi
-        - name: Promote confluentinc/cp-enterprise-alertmanager ubi8 ARM
+        - name: Promote confluentinc/cp-enterprise-alertmanager ubi9 ARM
           env_vars:
             - name: DOCKER_IMAGE
               value: confluentinc/cp-enterprise-alertmanager
           commands:
-            - export OS_TYPE="ubi8"
+            - export OS_TYPE="ubi9"
             - export DOCKER_REPO="confluentinc/cp-enterprise-alertmanager"
             - if [[ ! "$OS_TYPE" ]]; then export OS_TAG=""; elif [[ "$OS_TYPE" =~ $PROMOTE_OS_TYPE* ]]; then export OS_TAG="-$OS_TYPE"; fi
             - export INTERNAL_IMAGE_TAG="$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG$ARM_ARCH"
@@ -257,12 +257,12 @@ blocks:
     dependencies: ["Promote AMD", "Promote ARM"]
     task:
       jobs:
-        - name: Create Manifest confluentinc/cp-enterprise-control-center-next-gen ubi8
+        - name: Create Manifest confluentinc/cp-enterprise-control-center-next-gen ubi9
           env_vars:
             - name: DOCKER_IMAGE
               value: confluentinc/cp-enterprise-control-center-next-gen
           commands:
-            - export OS_TYPE="ubi8"
+            - export OS_TYPE="ubi9"
             - if [[ ! "$OS_TYPE" ]]; then export OS_TAG=""; elif [[ "$OS_TYPE" =~ $PROMOTE_OS_TYPE* ]]; then export OS_TAG="-$OS_TYPE"; fi
             - export DOCKER_REPO="confluentinc/cp-enterprise-control-center-next-gen"
             - export PROMOTED_TAG="$PROMOTED_TAG_PREFIX$OS_TAG"
@@ -283,12 +283,12 @@ blocks:
                   docker manifest create $DOCKER_REPO:latest-$OS_TYPE $DOCKER_REPO:latest-$OS_TYPE$AMD_ARCH $DOCKER_REPO:latest-$OS_TYPE$ARM_ARCH
                   docker manifest push $DOCKER_REPO:latest-$OS_TYPE
               fi
-        - name: Create Manifest confluentinc/cp-enterprise-prometheus ubi8
+        - name: Create Manifest confluentinc/cp-enterprise-prometheus ubi9
           env_vars:
             - name: DOCKER_IMAGE
               value: confluentinc/cp-enterprise-prometheus
           commands:
-            - export OS_TYPE="ubi8"
+            - export OS_TYPE="ubi9"
             - if [[ ! "$OS_TYPE" ]]; then export OS_TAG=""; elif [[ "$OS_TYPE" =~ $PROMOTE_OS_TYPE* ]]; then export OS_TAG="-$OS_TYPE"; fi
             - export DOCKER_REPO="confluentinc/cp-enterprise-prometheus"
             - export PROMOTED_TAG="$PROMOTED_TAG_PREFIX$OS_TAG"
@@ -309,12 +309,12 @@ blocks:
                   docker manifest create $DOCKER_REPO:latest-$OS_TYPE $DOCKER_REPO:latest-$OS_TYPE$AMD_ARCH $DOCKER_REPO:latest-$OS_TYPE$ARM_ARCH
                   docker manifest push $DOCKER_REPO:latest-$OS_TYPE
               fi
-        - name: Create Manifest confluentinc/cp-enterprise-alertmanager ubi8
+        - name: Create Manifest confluentinc/cp-enterprise-alertmanager ubi9
           env_vars:
             - name: DOCKER_IMAGE
               value: confluentinc/cp-enterprise-alertmanager
           commands:
-            - export OS_TYPE="ubi8"
+            - export OS_TYPE="ubi9"
             - if [[ ! "$OS_TYPE" ]]; then export OS_TAG=""; elif [[ "$OS_TYPE" =~ $PROMOTE_OS_TYPE* ]]; then export OS_TAG="-$OS_TYPE"; fi
             - export DOCKER_REPO="confluentinc/cp-enterprise-alertmanager"
             - export PROMOTED_TAG="$PROMOTED_TAG_PREFIX$OS_TAG"
