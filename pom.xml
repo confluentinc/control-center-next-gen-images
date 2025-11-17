@@ -152,7 +152,7 @@
         -->
 
         <!-- Base Image Versions -->
-        <ubi9-minimal.image.version>9.7-1762956380</ubi9-minimal.image.version>
+        <ubi9-minimal.image.version>9.7-1763362218</ubi9-minimal.image.version>
         <ubi9-micro.image.version>9.7-1762965531</ubi9-micro.image.version>
 
         <!-- OS Package Versions -->
