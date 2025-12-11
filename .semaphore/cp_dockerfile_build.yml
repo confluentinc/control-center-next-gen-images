@@ -78,7 +78,7 @@ global_job_config:
       - export DOCKER_PROD_REGISTRY="519856050701.dkr.ecr.us-west-2.amazonaws.com/docker/prod/"
       - export DOCKER_UPSTREAM_REGISTRY=$DOCKER_PROD_REGISTRY
       - export LATEST_TAG=$BRANCH_TAG-latest
-      - export DOCKER_UPSTREAM_TAG="8.1.1-rc251127071245"
+      - export DOCKER_UPSTREAM_TAG="8.1.x-latest"
       - export DOCKER_REPOS="confluentinc/cp-enterprise-control-center-next-gen confluentinc/cp-enterprise-prometheus confluentinc/cp-enterprise-alertmanager"
       - export COMMUNITY_DOCKER_REPOS=""
       - |
