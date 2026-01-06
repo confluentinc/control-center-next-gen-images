@@ -38,7 +38,6 @@ global_job_config:
       - export DEFAULT_OS_TYPE="ubi"
       - export PACKAGES_URL="https://dev-control-center-packages-654654529379-us-west-2.s3.us-west-2.amazonaws.com/confluent-control-center-next-gen/custom-build/CB-45/rpm"
       - 'echo "PACKAGES_URL: ${PACKAGES_URL}"'
-      - 'echo "PACKAGES_URL: ${PACKAGES_URL}"'
       - export PACKAGING_BUILD_NUMBER=$LATEST_PACKAGING_BUILD_NUMBER
       - >-
         if [[ $IS_BETA || $IS_HOTFIX || $IS_POST ]]; then
