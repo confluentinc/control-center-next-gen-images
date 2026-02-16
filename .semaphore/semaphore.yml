@@ -34,7 +34,7 @@ global_job_config:
       # For PR Builds using Packaging
       - export PACKAGING_BUCKET="s3://dev-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/$BRANCH_TAG/"
       # Check if version is complete, otherwise use the previous version
-      - export C3_VERSION=2.5.0 #hardcoded for now
+      - export C3_VERSION=2.6.0 #hardcoded for now
       - export DEFAULT_OS_TYPE="ubi"
       - export PACKAGES_URL="https://s3-us-west-2.amazonaws.com/dev-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/$BRANCH_TAG/latest/PACKAGE_TYPE"
       - 'echo "PACKAGES_URL: ${PACKAGES_URL}"'
@@ -66,7 +66,7 @@ global_job_config:
       - export DOCKER_PROD_REGISTRY="519856050701.dkr.ecr.us-west-2.amazonaws.com/docker/prod/"
       - export DOCKER_UPSTREAM_REGISTRY=$DOCKER_PROD_REGISTRY
       - export LATEST_TAG=$BRANCH_TAG-latest
-      - export DOCKER_UPSTREAM_TAG="8.1.x-latest"
+      - export DOCKER_UPSTREAM_TAG="8.2.x-latest"
       - export DOCKER_REPOS="confluentinc/cp-enterprise-control-center-next-gen confluentinc/cp-enterprise-prometheus confluentinc/cp-enterprise-alertmanager"
       - export COMMUNITY_DOCKER_REPOS=""
       - |
