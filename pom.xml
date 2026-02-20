@@ -40,6 +40,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>utility-belt</artifactId>
+                <version>8.0.4</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jolokia</groupId>
