@@ -421,7 +421,7 @@ blocks:
                 echo "$image:$LATEST_TAG$OS_TAG" >> docker-tags-summary.txt
                 echo "" >> docker-tags-summary.txt
               done
-            - echo "Tags summary saved to docker-tags-summary.txt"
+            - cat docker-tags-summary.txt
             - artifact push workflow docker-tags-summary.txt
 promotions:
   - name: 'Trigger APPSEC SBOM Generation Task'
