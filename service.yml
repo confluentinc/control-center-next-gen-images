@@ -1,6 +1,6 @@
 name: control-center-images-next-gen
 lang: python
-lang_version: 3.12
+lang_version: "3.12"
 git:
   enable: true
 codeowners:
@@ -55,6 +55,9 @@ semaphore:
           required: true
           options:
             - 'ubi'
+cp_dockerfile:
+  s390x_docker_repos: ['confluentinc/cp-enterprise-control-center-next-gen', 'confluentinc/cp-enterprise-prometheus', 'confluentinc/cp-enterprise-alertmanager']
+  s390x_maven_modules: ['control-center', 'prometheus', 'alertmanager']
 code_artifact:
   enable: true
   package_paths:
