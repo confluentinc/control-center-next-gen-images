@@ -47,18 +47,6 @@ global_job_config:
       - export AMD_ARCH=.amd64
       - export ARM_ARCH=.arm64
       - export S390X_ARCH=.s390x
-      - export COMMUNITY_DOCKER_REPOS=""
-      - |
-        if [[ $SKIP_COMMUNITY == "True" ]]; then
-          for skip_repo in $COMMUNITY_DOCKER_REPOS; do
-            if [ "$skip_repo" = "$DOCKER_IMAGE" ]; then
-              echo "Skipping promotion for $DOCKER_IMAGE as it is in COMMUNITY_DOCKER_REPOS list"
-              export SEMAPHORE_JOB_RESULT=passed
-              return 130
-            fi
-          done
-        fi
-
 blocks:
   - name: Promote AMD
     dependencies: []
