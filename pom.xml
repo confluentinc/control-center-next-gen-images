@@ -152,7 +152,7 @@
         -->
 
         <!-- Base Image Versions -->
-        <ubi9-minimal.image.version>9.7-1773939694</ubi9-minimal.image.version>
+        <ubi9-minimal.image.version>9.7-1775623882</ubi9-minimal.image.version>
         <ubi9-micro.image.version>9.7-1773894938</ubi9-micro.image.version>
 
         <!-- OS Package Versions -->
@@ -162,7 +162,7 @@
         <git-repo.cp-docker-utils.tag>v1.0.9</git-repo.cp-docker-utils.tag>
 
         <!-- Docker Hub Images -->
-        <golang.image.version>1.26.1-trixie</golang.image.version>
+        <golang.image.version>1.26.2-trixie</golang.image.version>
 
     </properties>
 </project>
