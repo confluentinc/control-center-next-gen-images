@@ -59,7 +59,12 @@ global_job_config:
         else
             export PLATFORM_LABEL=""
         fi
-      - export PACKAGING_BUILD_ARGS=" -DC3_VERSION=$C3_VERSION  -DCONFLUENT_PLATFORM_LABEL=$PLATFORM_LABEL -DCONFLUENT_DEB_VERSION=$CONFLUENT_DEB_VERSION  -DALLOW_UNSIGNED=$ALLOW_UNSIGNED"
+      - |
+        export PACKAGING_BUILD_ARGS=""
+        if [[ -n "$C3_VERSION" ]]; then PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DC3_VERSION=$C3_VERSION"; fi
+        if [[ -n "$PLATFORM_LABEL" ]]; then PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DCONFLUENT_PLATFORM_LABEL=$PLATFORM_LABEL"; fi
+        if [[ -n "$CONFLUENT_DEB_VERSION" ]]; then PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DCONFLUENT_DEB_VERSION=$CONFLUENT_DEB_VERSION"; fi
+        if [[ -n "$ALLOW_UNSIGNED" ]]; then PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DALLOW_UNSIGNED=$ALLOW_UNSIGNED"; fi
       - >-
         if [[ $IS_RELEASE && $PACKAGING_BUILD_NUMBER ]]; then
           if [[ $IS_RC ]]; then
@@ -78,31 +83,13 @@ global_job_config:
       - export DOCKER_PROD_REGISTRY="519856050701.dkr.ecr.us-west-2.amazonaws.com/docker/prod/"
       - export LATEST_TAG=$BRANCH_TAG-latest
       - export DOCKER_REPOS="confluentinc/cp-enterprise-control-center-next-gen confluentinc/cp-enterprise-prometheus confluentinc/cp-enterprise-alertmanager"
-      - export COMMUNITY_DOCKER_REPOS=""
-      - |
-        if [[ $SKIP_COMMUNITY == "True" ]]; then
-          # Filter out community repos from DOCKER_REPOS
-          DOCKER_REPOS=$(comm -23 <(echo "$DOCKER_REPOS" | tr ' ' '\n' | sort) <(echo "$COMMUNITY_DOCKER_REPOS" | tr ' ' '\n' | sort) | tr '\n' ' ' | xargs)
-          export DOCKER_REPOS
-          echo "DOCKER_REPOS after skipping community images - $DOCKER_REPOS"
-
-          # Set Maven arguments for skipping community modules
-          export MAVEN_EXTRA_ARGS=""
-
-          # Check if current DOCKER_IMAGE is in community repos, skip job execution
-          for skip_repo in $COMMUNITY_DOCKER_REPOS; do
-            if [ "$skip_repo" = "$DOCKER_IMAGE" ]; then
-              echo "Skipping build for $DOCKER_IMAGE as it is in COMMUNITY_DOCKER_REPOS list"
-              export SEMAPHORE_JOB_RESULT=passed
-              return 130
-            fi
-          done
-        else
-          export MAVEN_EXTRA_ARGS=""
-        fi
+      - export S390X_DOCKER_REPOS="confluentinc/cp-enterprise-control-center-next-gen confluentinc/cp-enterprise-prometheus confluentinc/cp-enterprise-alertmanager"
+      - export S390X_MAVEN_MODULES="control-center prometheus alertmanager"
+      - export S390X_MVN_PL_ARGS="-pl ${S390X_MAVEN_MODULES// /,} -am"
       - export DOCKER_DEV_TAG="dev-$BRANCH_TAG-$BUILD_NUMBER"
       - export AMD_ARCH=.amd64
       - export ARM_ARCH=.arm64
+      - export S390X_ARCH=.s390x
 blocks:
   - name: Validation
     dependencies: []
@@ -128,9 +115,9 @@ blocks:
             - ci-tools ci-update-version
             - export OS_PACKAGES_URL=$(echo "$PACKAGES_URL" | sed "s/PACKAGE_TYPE/rpm/g")
             - export PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DCONFLUENT_PACKAGES_REPO=$OS_PACKAGES_URL"
-            - mvn -Dmaven.wagon.http.retryHandler.count=3 --batch-mode -P jenkins,docker clean package dependency:analyze validate -U -Ddocker.registry=$DOCKER_DEV_REGISTRY
+            - mvn -Dmaven.wagon.http.retryHandler.count=3 --batch-mode -P jenkins,docker-fabric8 clean package dependency:analyze validate -U -Ddocker.registry=$DOCKER_DEV_REGISTRY
               -DBUILD_NUMBER=$BUILD_NUMBER -DGIT_COMMIT=$GIT_COMMIT -Ddocker.tag=$DOCKER_DEV_TAG$OS_TAG$AMD_ARCH -Darch.type=$AMD_ARCH -Ddocker.os_type=ubi9
-              $PACKAGING_BUILD_ARGS -Ddependency.check.skip=true $MAVEN_EXTRA_ARGS
+              $PACKAGING_BUILD_ARGS -Ddependency.check.skip=true
             - . cache-maven store
             - >-
               for dev_image in $AMD_DOCKER_DEV_FULL_IMAGES;
@@ -252,9 +239,9 @@ blocks:
             - export OS_PACKAGES_URL=$(echo "$PACKAGES_URL" | sed "s/PACKAGE_TYPE/rpm/g")
             - export PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DCONFLUENT_PACKAGES_REPO=$OS_PACKAGES_URL"
             - ci-tools ci-update-version
-            - mvn -Dmaven.wagon.http.retryHandler.count=3 --batch-mode -P jenkins,docker clean package dependency:analyze validate -U -Ddocker.registry=$DOCKER_DEV_REGISTRY
+            - mvn -Dmaven.wagon.http.retryHandler.count=3 --batch-mode -P jenkins,docker-fabric8 clean package dependency:analyze validate -U -Ddocker.registry=$DOCKER_DEV_REGISTRY
               -DBUILD_NUMBER=$BUILD_NUMBER -DGIT_COMMIT=$GIT_COMMIT -Ddocker.tag=$DOCKER_DEV_TAG$OS_TAG$ARM_ARCH -Darch.type=$ARM_ARCH -Ddocker.os_type=ubi9
-              $PACKAGING_BUILD_ARGS -Ddependency.check.skip=true $MAVEN_EXTRA_ARGS
+              $PACKAGING_BUILD_ARGS -Ddependency.check.skip=true
             - . cache-maven store
             - for image in $ARM_DOCKER_DEV_FULL_IMAGES; do echo "Pushing $image" && docker push $image; done
       epilogue:
@@ -362,9 +349,121 @@ blocks:
             - export LATEST_PUSH_TAG=$LATEST_TAG$OS_TAG$ARM_ARCH
             - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$LATEST_PUSH_TAG
             - docker push $PROD_IMAGE_NAME:$LATEST_PUSH_TAG
+  - name: Build & Test s390x
+    dependencies: ["Validation"]
+    run:
+      # don't run the tests on non-functional changes...
+      when: "change_in('/', {exclude: ['/.deployed-versions/', '.github/']})"
+    task:
+      jobs:
+        - name: Build & Test s390x ubi9
+          commands:
+            - export OS_TAG="-ubi9"
+            - export OS_PACKAGES_URL=$(echo "$PACKAGES_URL" | sed "s/PACKAGE_TYPE/rpm/g")
+            - export PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DCONFLUENT_PACKAGES_REPO=$OS_PACKAGES_URL"
+            # Register QEMU binfmt for s390x so Docker can run s390x containers on amd64 for testing.
+            # ARM builds run on native arm64 machines, but s390x cross-compiles on amd64 via BuildX and needs QEMU.
+            - docker run --privileged --rm tonistiigi/binfmt --install s390x
+            - 'docker buildx ls | grep -q s390x || (echo "ERROR: s390x binfmt registration failed" && exit 1)'
+            - ci-tools ci-update-version
+            - mvn -Dmaven.wagon.http.retryHandler.count=3 --batch-mode -P jenkins,docker-fabric8 clean package dependency:analyze validate -U $S390X_MVN_PL_ARGS -Ddocker.registry=$DOCKER_DEV_REGISTRY
+              -DBUILD_NUMBER=$BUILD_NUMBER -DGIT_COMMIT=$GIT_COMMIT -Ddocker.tag=$DOCKER_DEV_TAG$OS_TAG$S390X_ARCH -Darch.type=$S390X_ARCH -Ddocker.os_type=ubi9
+              -Ddocker.buildx.platforms=linux/s390x $PACKAGING_BUILD_ARGS -Ddependency.check.skip=true
+            - . cache-maven store
+            - export S390X_DOCKER_DEV_FULL_IMAGES=$DOCKER_DEV_REGISTRY${S390X_DOCKER_REPOS// /:$DOCKER_DEV_TAG$OS_TAG $DOCKER_DEV_REGISTRY}:$DOCKER_DEV_TAG$OS_TAG
+            - export S390X_DOCKER_DEV_FULL_IMAGES=${S390X_DOCKER_DEV_FULL_IMAGES// /$S390X_ARCH }$S390X_ARCH
+            - for image in $S390X_DOCKER_DEV_FULL_IMAGES; do echo "Pushing $image" && docker push $image; done
+      epilogue:
+        always:
+          commands:
+            - . publish-test-results
+            - artifact push workflow target/test-results
+            - artifact push workflow target --destination target-S390X
+  - name: Deploy s390x confluentinc/cp-enterprise-control-center-next-gen
+    dependencies: ["Build & Test s390x"]
+    run:
+      when: "branch = 'master' or branch =~ '^[0-9]+\\.[0-9]+\\.x$' or branch =~ '^[0-9]+\\.[0-9]+\\.[0-9]+(-cp[0-9]+)?(-rc[0-9]+)?$'"
+    task:
+      jobs:
+        - name: Deploy s390x confluentinc/cp-enterprise-control-center-next-gen ubi9
+          commands:
+            - export OS_TAG="-ubi9"
+            - export PROD_IMAGE_NAME=${DOCKER_PROD_REGISTRY}confluentinc/cp-enterprise-control-center-next-gen
+            - export GIT_COMMIT_TAG=$GIT_COMMIT$OS_TAG$S390X_ARCH
+            - export BRANCH_BUILD_TAG=$BRANCH_TAG-$BUILD_NUMBER$OS_TAG$S390X_ARCH
+            - export DEV_IMAGE_FULL=${DOCKER_DEV_REGISTRY}confluentinc/cp-enterprise-control-center-next-gen:$DOCKER_DEV_TAG$OS_TAG$S390X_ARCH
+            - docker pull $DEV_IMAGE_FULL
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$GIT_COMMIT_TAG
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$BRANCH_BUILD_TAG
+            - docker push $PROD_IMAGE_NAME:$GIT_COMMIT_TAG
+            - docker push $PROD_IMAGE_NAME:$BRANCH_BUILD_TAG
+            - sign-images $PROD_IMAGE_NAME:$GIT_COMMIT_TAG
+            - sign-images $PROD_IMAGE_NAME:$BRANCH_BUILD_TAG
+            - export PACKAGE_TAG=$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG$S390X_ARCH
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$PACKAGE_TAG
+            - docker push $PROD_IMAGE_NAME:$PACKAGE_TAG
+            - sign-images $PROD_IMAGE_NAME:$PACKAGE_TAG
+            - export LATEST_PUSH_TAG=$LATEST_TAG$OS_TAG$S390X_ARCH
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$LATEST_PUSH_TAG
+            - docker push $PROD_IMAGE_NAME:$LATEST_PUSH_TAG
+  - name: Deploy s390x confluentinc/cp-enterprise-prometheus
+    dependencies: ["Build & Test s390x"]
+    run:
+      when: "branch = 'master' or branch =~ '^[0-9]+\\.[0-9]+\\.x$' or branch =~ '^[0-9]+\\.[0-9]+\\.[0-9]+(-cp[0-9]+)?(-rc[0-9]+)?$'"
+    task:
+      jobs:
+        - name: Deploy s390x confluentinc/cp-enterprise-prometheus ubi9
+          commands:
+            - export OS_TAG="-ubi9"
+            - export PROD_IMAGE_NAME=${DOCKER_PROD_REGISTRY}confluentinc/cp-enterprise-prometheus
+            - export GIT_COMMIT_TAG=$GIT_COMMIT$OS_TAG$S390X_ARCH
+            - export BRANCH_BUILD_TAG=$BRANCH_TAG-$BUILD_NUMBER$OS_TAG$S390X_ARCH
+            - export DEV_IMAGE_FULL=${DOCKER_DEV_REGISTRY}confluentinc/cp-enterprise-prometheus:$DOCKER_DEV_TAG$OS_TAG$S390X_ARCH
+            - docker pull $DEV_IMAGE_FULL
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$GIT_COMMIT_TAG
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$BRANCH_BUILD_TAG
+            - docker push $PROD_IMAGE_NAME:$GIT_COMMIT_TAG
+            - docker push $PROD_IMAGE_NAME:$BRANCH_BUILD_TAG
+            - sign-images $PROD_IMAGE_NAME:$GIT_COMMIT_TAG
+            - sign-images $PROD_IMAGE_NAME:$BRANCH_BUILD_TAG
+            - export PACKAGE_TAG=$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG$S390X_ARCH
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$PACKAGE_TAG
+            - docker push $PROD_IMAGE_NAME:$PACKAGE_TAG
+            - sign-images $PROD_IMAGE_NAME:$PACKAGE_TAG
+            - export LATEST_PUSH_TAG=$LATEST_TAG$OS_TAG$S390X_ARCH
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$LATEST_PUSH_TAG
+            - docker push $PROD_IMAGE_NAME:$LATEST_PUSH_TAG
+  - name: Deploy s390x confluentinc/cp-enterprise-alertmanager
+    dependencies: ["Build & Test s390x"]
+    run:
+      when: "branch = 'master' or branch =~ '^[0-9]+\\.[0-9]+\\.x$' or branch =~ '^[0-9]+\\.[0-9]+\\.[0-9]+(-cp[0-9]+)?(-rc[0-9]+)?$'"
+    task:
+      jobs:
+        - name: Deploy s390x confluentinc/cp-enterprise-alertmanager ubi9
+          commands:
+            - export OS_TAG="-ubi9"
+            - export PROD_IMAGE_NAME=${DOCKER_PROD_REGISTRY}confluentinc/cp-enterprise-alertmanager
+            - export GIT_COMMIT_TAG=$GIT_COMMIT$OS_TAG$S390X_ARCH
+            - export BRANCH_BUILD_TAG=$BRANCH_TAG-$BUILD_NUMBER$OS_TAG$S390X_ARCH
+            - export DEV_IMAGE_FULL=${DOCKER_DEV_REGISTRY}confluentinc/cp-enterprise-alertmanager:$DOCKER_DEV_TAG$OS_TAG$S390X_ARCH
+            - docker pull $DEV_IMAGE_FULL
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$GIT_COMMIT_TAG
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$BRANCH_BUILD_TAG
+            - docker push $PROD_IMAGE_NAME:$GIT_COMMIT_TAG
+            - docker push $PROD_IMAGE_NAME:$BRANCH_BUILD_TAG
+            - sign-images $PROD_IMAGE_NAME:$GIT_COMMIT_TAG
+            - sign-images $PROD_IMAGE_NAME:$BRANCH_BUILD_TAG
+            - export PACKAGE_TAG=$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG$S390X_ARCH
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$PACKAGE_TAG
+            - docker push $PROD_IMAGE_NAME:$PACKAGE_TAG
+            - sign-images $PROD_IMAGE_NAME:$PACKAGE_TAG
+            - export LATEST_PUSH_TAG=$LATEST_TAG$OS_TAG$S390X_ARCH
+            - docker tag $DEV_IMAGE_FULL $PROD_IMAGE_NAME:$LATEST_PUSH_TAG
+            - docker push $PROD_IMAGE_NAME:$LATEST_PUSH_TAG
   - name: Create Manifest and Maven Deploy
     dependencies: ["Deploy AMD confluentinc/cp-enterprise-control-center-next-gen", "Deploy AMD confluentinc/cp-enterprise-prometheus", "Deploy AMD confluentinc/cp-enterprise-alertmanager", "Deploy ARM
-          confluentinc/cp-enterprise-control-center-next-gen", "Deploy ARM confluentinc/cp-enterprise-prometheus", "Deploy ARM confluentinc/cp-enterprise-alertmanager"]
+          confluentinc/cp-enterprise-control-center-next-gen", "Deploy ARM confluentinc/cp-enterprise-prometheus", "Deploy ARM confluentinc/cp-enterprise-alertmanager",
+          "Deploy s390x confluentinc/cp-enterprise-control-center-next-gen", "Deploy s390x confluentinc/cp-enterprise-prometheus", "Deploy s390x confluentinc/cp-enterprise-alertmanager"]
     run:
       when: "branch = 'master' or branch =~ '^[0-9]+\\.[0-9]+\\.x$' or branch =~ '^[0-9]+\\.[0-9]+\\.[0-9]+(-cp[0-9]+)?(-rc[0-9]+)?$'"
     task:
@@ -381,21 +480,25 @@ blocks:
               for image in $DOCKER_PROD_IMAGE_NAME;
               do
                 export OS_TAG="-ubi9"
+                # Check if current image has an s390x build. ${IS_S390X:+...} conditionally
+                # includes the s390x digest in the manifest only for repos in S390X_DOCKER_REPOS.
+                IS_S390X=""
+                for s390x_repo in $S390X_DOCKER_REPOS; do if [[ "$image" == "$DOCKER_PROD_REGISTRY$s390x_repo" ]]; then IS_S390X="true"; break; fi; done
                 export GIT_TAG=$GIT_COMMIT$OS_TAG
-                docker manifest create $image:$GIT_TAG $image:$GIT_TAG$AMD_ARCH $image:$GIT_TAG$ARM_ARCH
+                docker manifest create $image:$GIT_TAG $image:$GIT_TAG$AMD_ARCH $image:$GIT_TAG$ARM_ARCH ${IS_S390X:+$image:$GIT_TAG$S390X_ARCH}
                 docker manifest push $image:$GIT_TAG
                 docker pull $image:$GIT_TAG
                 sign-images $image:$GIT_TAG
                 export BRANCH_BUILD_TAG=$BRANCH_TAG-$BUILD_NUMBER$OS_TAG
-                docker manifest create $image:$BRANCH_BUILD_TAG $image:$BRANCH_BUILD_TAG$AMD_ARCH $image:$BRANCH_BUILD_TAG$ARM_ARCH
+                docker manifest create $image:$BRANCH_BUILD_TAG $image:$BRANCH_BUILD_TAG$AMD_ARCH $image:$BRANCH_BUILD_TAG$ARM_ARCH ${IS_S390X:+$image:$BRANCH_BUILD_TAG$S390X_ARCH}
                 docker manifest push $image:$BRANCH_BUILD_TAG
                 docker pull $image:$BRANCH_BUILD_TAG
                 sign-images $image:$BRANCH_BUILD_TAG
                 export PACKAGE_TAG=$BRANCH_TAG-$PACKAGING_BUILD_NUMBER$OS_TAG
-                docker manifest create $image:$PACKAGE_TAG $image:$PACKAGE_TAG$AMD_ARCH $image:$PACKAGE_TAG$ARM_ARCH
+                docker manifest create $image:$PACKAGE_TAG $image:$PACKAGE_TAG$AMD_ARCH $image:$PACKAGE_TAG$ARM_ARCH ${IS_S390X:+$image:$PACKAGE_TAG$S390X_ARCH}
                 docker manifest push $image:$PACKAGE_TAG
                 export LATEST_MANIFEST_TAG=$LATEST_TAG$OS_TAG
-                docker manifest create $image:$LATEST_MANIFEST_TAG $image:$LATEST_MANIFEST_TAG$AMD_ARCH $image:$LATEST_MANIFEST_TAG$ARM_ARCH
+                docker manifest create $image:$LATEST_MANIFEST_TAG $image:$LATEST_MANIFEST_TAG$AMD_ARCH $image:$LATEST_MANIFEST_TAG$ARM_ARCH ${IS_S390X:+$image:$LATEST_MANIFEST_TAG$S390X_ARCH}
                 docker manifest push $image:$LATEST_MANIFEST_TAG
               done
   - name: Push docker images tags summary to artifacts
@@ -444,4 +547,5 @@ after_pipeline:
           - checkout
           - artifact pull workflow target-AMD
           - artifact pull workflow target-ARM
+          - artifact pull workflow target-S390X
           - emit-sonarqube-data --run_only_sonar_scan
