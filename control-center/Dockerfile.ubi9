@@ -67,9 +67,9 @@ RUN echo "===> Installing Temurin JRE..." \
     && echo "===> Deduping jars in /microdir ..." \
     && package_dedupe /microdir/usr/share/java \
     && echo "===> Removing unused services (Prometheus, Alertmanager)..." \
-    && rm -f /microdir/usr/lib/systemd/system/prometheus.service \
+    && rm -f /microdir/lib/systemd/system/prometheus.service \
     && rm -rf /microdir/usr/libexec/confluent-control-center/linux_*/prometheus \
-    && rm -f /microdir/usr/lib/systemd/system/alertmanager.service \
+    && rm -f /microdir/lib/systemd/system/alertmanager.service \
     && rm -rf /microdir/usr/libexec/confluent-control-center/linux_*/alertmanager \
     && echo "===> Cleaning up ..." \
     && dnf --installroot=/microdir clean all \
