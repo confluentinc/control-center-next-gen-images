@@ -60,6 +60,9 @@ global_job_config:
             export PLATFORM_LABEL=""
         fi
       - |
+        # Guard each -D flag: passing an empty value (e.g. -DALLOW_UNSIGNED=) on the
+        # command line overrides the default defined in the docker-fabric8 Maven profile,
+        # causing fabric8 to receive a null build arg and fail the Docker build.
         export PACKAGING_BUILD_ARGS=""
         if [[ -n "$C3_VERSION" ]]; then PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DC3_VERSION=$C3_VERSION"; fi
         if [[ -n "$PLATFORM_LABEL" ]]; then PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DCONFLUENT_PLATFORM_LABEL=$PLATFORM_LABEL"; fi
