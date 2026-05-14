@@ -155,7 +155,11 @@
         the automation tooling can correctly identify and update them.
         -->
 
-        <!-- App User/Group IDs - can be overridden at build time via -Dapp.uid=<value> -Dapp.gid=<value> -->
+        <!-- Application User Configuration
+             User and group IDs for the non-root user (appuser) configured in Docker images.
+             These values ensure consistent UID/GID across all container images and multi-stage builds,
+             preventing permission issues when copying files between stages or mounting volumes.
+             Can be overridden at build time via: -Dapp.uid=<value> -Dapp.gid=<value> -->
         <app.uid>1000</app.uid>
         <app.gid>1000</app.gid>
 
