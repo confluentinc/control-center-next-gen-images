@@ -99,5 +99,7 @@ RUN mkdir -p /var/lib/confluent/control-center/alertmanager/ && \
 
 USER appuser
 
-VOLUME [ "/var/lib/confluent/control-center/alertmanager/" ]
+VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
 ENTRYPOINT [ "alertmanager-start" ]
+
+
