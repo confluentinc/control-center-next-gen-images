@@ -86,7 +86,7 @@
                         <ARCH>${arch.type}</ARCH>
                         <C3_VERSION>${C3_VERSION}</C3_VERSION>
                         <GOLANG_VERSION>${golang.image.version}</GOLANG_VERSION>
-                        <TEMURIN_JDK_VERSION>-${ubi9.temurin-21-jdk.version}</TEMURIN_JDK_VERSION>
+                        <TEMURIN_JDK_VERSION>-${ubi9-minimal.temurin-25-jdk.version}</TEMURIN_JDK_VERSION>
                         <CP_DOCKER_UTILS_VERSION>${git-repo.cp-docker-utils.tag}</CP_DOCKER_UTILS_VERSION>
                     </buildArgs>
                 </configuration>
@@ -106,7 +106,7 @@
                       <ARCH>${arch.type}</ARCH>
                       <C3_VERSION>${C3_VERSION}</C3_VERSION>
                       <GOLANG_VERSION>${golang.image.version}</GOLANG_VERSION>
-                      <TEMURIN_JDK_VERSION>-${ubi9.temurin-21-jdk.version}</TEMURIN_JDK_VERSION>
+                      <TEMURIN_JDK_VERSION>-${ubi9-minimal.temurin-25-jdk.version}</TEMURIN_JDK_VERSION>
                       <CP_DOCKER_UTILS_VERSION>${git-repo.cp-docker-utils.tag}</CP_DOCKER_UTILS_VERSION>
                     </args>
                   </build>
@@ -161,16 +161,16 @@
 
         <!-- Base Image Versions -->
         <ubi9.image.version>9.7-1771346757</ubi9.image.version>
-        <ubi9-micro.image.version>9.7-1771346390</ubi9-micro.image.version>
+        <ubi9-micro.image.version>9.7-1778461406</ubi9-micro.image.version>
 
         <!-- OS Package Versions -->
-        <ubi9.temurin-21-jdk.version>21.0.10.0.0.7-0</ubi9.temurin-21-jdk.version>
+        <ubi9-minimal.temurin-25-jdk.version>25.0.3.0.0.9-0</ubi9-minimal.temurin-25-jdk.version>
 
         <!-- GitHub Repository Tags -->
-        <git-repo.cp-docker-utils.tag>v1.0.10</git-repo.cp-docker-utils.tag>
+        <git-repo.cp-docker-utils.tag>v1.0.11</git-repo.cp-docker-utils.tag>
 
         <!-- Docker Hub Images -->
-        <golang.image.version>1.26.2-trixie</golang.image.version>
+        <golang.image.version>1.26.3-trixie</golang.image.version>
 
     </properties>
 </project>
