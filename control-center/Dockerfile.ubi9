@@ -20,14 +20,13 @@ ARG GOLANG_VERSION
 ARG UBI9_VERSION
 ARG UBI_MICRO_VERSION
 
-# Stage 1: Build ub and package_dedupe utility binaries
+# Stage 1: Build ub utility binary
 FROM docker.io/golang:${GOLANG_VERSION} AS build-utilities
 
 ARG CP_DOCKER_UTILS_VERSION
 
 ENV GO_BIN="/go/bin"
 RUN CGO_ENABLED=0 go install -ldflags="-w -s" github.com/confluentinc/cp-docker-utils/cmd/ub@${CP_DOCKER_UTILS_VERSION}
-RUN CGO_ENABLED=0 go install -ldflags="-w -s" github.com/confluentinc/cp-docker-utils/cmd/package_dedupe@${CP_DOCKER_UTILS_VERSION}
 
 
 # Stage 2: Install packages to /microdir using full ubi9 with dnf
@@ -38,8 +37,6 @@ ARG APP_GID
 ARG TEMURIN_JDK_VERSION
 ARG C3_VERSION
 ARG CONFLUENT_PACKAGES_REPO
-
-COPY --from=build-utilities /go/bin/package_dedupe /usr/local/bin/package_dedupe
 
 RUN printf "[temurin-jre] \n\
 name=temurin-jre \n\
@@ -62,8 +59,6 @@ RUN echo "===> Installing Temurin JRE and Control Center Next Gen..." \
        "temurin-25-jre${TEMURIN_JDK_VERSION}" \
        "confluent-control-center-next-gen-${C3_VERSION}" \
        shadow-utils \
-    && echo "===> Deduping jars in /microdir ..." \
-    && package_dedupe /microdir/usr/share/java \
     && echo "===> Removing unused services (Prometheus, Alertmanager)..." \
     && rm -f /microdir/lib/systemd/system/prometheus.service \
     && rm -rf /microdir/usr/libexec/confluent-control-center/linux_*/prometheus \
@@ -119,7 +114,6 @@ EXPOSE 9021
 USER root
 
 COPY --from=build-utilities /go/bin/ub /usr/bin/ub
-COPY --from=build-utilities /go/bin/package_dedupe /usr/bin/package_dedupe
 COPY --from=builder /microdir/ /
 
 RUN mkdir -p /etc/confluent/docker /usr/logs /licenses \
