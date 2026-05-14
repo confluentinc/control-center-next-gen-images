@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+ARG APP_UID=1000
+ARG APP_GID=1000
+
 ARG UBI_MINIMAL_VERSION
 ARG UBI_MICRO_VERSION
 
@@ -58,10 +61,15 @@ FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MICRO_VERSION}
 WORKDIR /app
 USER root
 
+ARG APP_UID
+ARG APP_GID
 ARG ARCH
 ARG PROJECT_VERSION
 ARG ARTIFACT_ID
 ARG GIT_COMMIT
+
+ENV APP_UID=${APP_UID}
+ENV APP_GID=${APP_GID}
 
 # Update package list and install essential packages
 
@@ -98,9 +106,10 @@ RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/alertmanager/
 WORKDIR /usr/bin
 
 
-RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
+RUN echo "appuser:x:${APP_UID}:${APP_GID}::/home/appuser:/bin/sh" >> /etc/passwd && \
+    echo "appuser:x:${APP_GID}:" >> /etc/group && \
     mkdir -p /home/appuser && \
-    chown 1000:1000 /home/appuser
+    chown ${APP_UID}:${APP_GID} /home/appuser
 
 
 ## Creating the default log directory and data directory utilized by the script to ensure that Alertmanager
@@ -110,8 +119,8 @@ RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
 ## Security Practice: Adheres to the principle of least privilege.
 RUN mkdir -p /var/lib/confluent/control-center/alertmanager/ && \
     mkdir -p /var/log/confluent/control-center && \
-    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center
-USER appuser
+    chown -R ${APP_UID}:${APP_GID} /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center
+USER ${APP_UID}
 
 VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
 ENTRYPOINT [ "alertmanager-start" ]
