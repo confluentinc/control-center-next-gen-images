@@ -1,8 +1,3 @@
-# This file is managed by ServiceBot plugin - Semaphore. The content in this file is created using a common
-# template and configurations in service.yml.
-# Any modifications made to ths file will be overwritten by the generated content in nightly runs.
-# For more information, please refer to the page:
-# https://confluentinc.atlassian.net/wiki/spaces/Foundations/pages/2871296194/Add+SemaphoreCI
 version: v1.0
 name: build-test-release
 agent:
@@ -159,6 +154,85 @@ blocks:
             - . publish-test-results
             - artifact push workflow target/test-results
             - artifact push workflow target --destination target-ARM
+  # Automates the manual verification described in .github/PULL_REQUEST_TEMPLATE.md:
+  # boots cp-all-in-one with the PR-built dev images and waits for control-center,
+  # prometheus, and alertmanager to respond healthy. Addresses MMA-17737 / INC-6655.
+  - name: Verify cp-all-in-one Docker Compose
+    dependencies: ["Build, Test, & Scan AMD"]
+    run:
+      when: "pull_request =~ '.*'"
+    task:
+      jobs:
+        - name: cp-all-in-one docker compose smoke test
+          commands:
+            # Derive the matching cp-all-in-one branch from depot's c3_versions.json
+            # using C3_VERSION (hardcoded per branch in the global prologue).
+            # Override by setting CP_ALL_IN_ONE_BRANCH externally (e.g. when re-running
+            # the workflow from the Semaphore UI).
+            - |
+              if [ -z "${CP_ALL_IN_ONE_BRANCH:-}" ]; then
+                C3_KEY="$(echo "$C3_VERSION" | grep -oE '^[0-9]+\.[0-9]+').x"
+                CP_VERSION=$(gh api repos/confluentinc/depot/contents/python/common_tools/data/prod/c3_versions.json \
+                  | jq -r '.content' | base64 -d \
+                  | jq -r --arg v "$C3_KEY" '.[$v]["confluent.version"] // empty' \
+                  | sed -E 's/-cp[0-9]+$//')
+                if [ -n "$CP_VERSION" ]; then
+                  CP_ALL_IN_ONE_BRANCH="${CP_VERSION}-post"
+                  # Fall back to master if the derived branch hasn't been cut yet.
+                  if ! git ls-remote --exit-code --heads https://github.com/confluentinc/cp-all-in-one.git "$CP_ALL_IN_ONE_BRANCH" >/dev/null 2>&1; then
+                    echo "cp-all-in-one branch '$CP_ALL_IN_ONE_BRANCH' not found, falling back to master"
+                    CP_ALL_IN_ONE_BRANCH=master
+                  fi
+                else
+                  echo "No c3_versions.json entry for $C3_KEY, falling back to master"
+                  CP_ALL_IN_ONE_BRANCH=master
+                fi
+                export CP_ALL_IN_ONE_BRANCH
+              fi
+              echo "Using cp-all-in-one branch: $CP_ALL_IN_ONE_BRANCH (C3_VERSION=$C3_VERSION)"
+            - export ARCH_TAG="-ubi9$AMD_ARCH"
+            - export DEV_C3_IMAGE="${DOCKER_DEV_REGISTRY}confluentinc/cp-enterprise-control-center-next-gen:${DOCKER_DEV_TAG}${ARCH_TAG}"
+            - export DEV_PROM_IMAGE="${DOCKER_DEV_REGISTRY}confluentinc/cp-enterprise-prometheus:${DOCKER_DEV_TAG}${ARCH_TAG}"
+            - export DEV_AM_IMAGE="${DOCKER_DEV_REGISTRY}confluentinc/cp-enterprise-alertmanager:${DOCKER_DEV_TAG}${ARCH_TAG}"
+            - echo "Using PR-built images - C3:$DEV_C3_IMAGE PROM:$DEV_PROM_IMAGE AM:$DEV_AM_IMAGE"
+            - export AIO_DIR=/tmp/cp-all-in-one
+            - rm -rf "$AIO_DIR"
+            - git clone --depth 1 -b "$CP_ALL_IN_ONE_BRANCH" https://github.com/confluentinc/cp-all-in-one.git "$AIO_DIR"
+            - cd "$AIO_DIR/cp-all-in-one"
+            - sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-control-center-next-gen:[^[:space:]]+|image: ${DEV_C3_IMAGE}|g" docker-compose.yml
+            - sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-prometheus:[^[:space:]]+|image: ${DEV_PROM_IMAGE}|g" docker-compose.yml
+            - sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-alertmanager:[^[:space:]]+|image: ${DEV_AM_IMAGE}|g" docker-compose.yml
+            - echo "Patched image refs:" && grep -E "^[[:space:]]*image:" docker-compose.yml
+            - docker compose pull control-center prometheus alertmanager
+            - docker compose up -d
+            - |
+              echo "Waiting up to 10 minutes for control-center, prometheus, and alertmanager to become healthy..."
+              healthy=0
+              for i in $(seq 1 60); do
+                c3=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9021/ || echo 000)
+                prom=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9090/-/ready || echo 000)
+                am=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9093/-/ready || echo 000)
+                echo "[try $i] control-center=$c3 prometheus=$prom alertmanager=$am"
+                if [ "$c3" = "200" ] && [ "$prom" = "200" ] && [ "$am" = "200" ]; then
+                  healthy=1
+                  break
+                fi
+                sleep 10
+              done
+              if [ "$healthy" != "1" ]; then
+                echo "Verification failed: services did not all become healthy within 10 minutes."
+                exit 1
+              fi
+              echo "Verification passed: control-center, prometheus, and alertmanager are healthy."
+      epilogue:
+        always:
+          commands:
+            - cd /tmp/cp-all-in-one/cp-all-in-one || true
+            - echo "=== docker compose ps ===" && docker compose ps || true
+            - echo "=== control-center logs ===" && docker compose logs --no-color --tail=300 control-center || true
+            - echo "=== prometheus logs ===" && docker compose logs --no-color --tail=100 prometheus || true
+            - echo "=== alertmanager logs ===" && docker compose logs --no-color --tail=100 alertmanager || true
+            - docker compose down -v || true
 after_pipeline:
   task:
     agent:
