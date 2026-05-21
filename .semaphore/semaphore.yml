@@ -199,9 +199,9 @@ blocks:
             - rm -rf "$AIO_DIR"
             - git clone --depth 1 -b "$CP_ALL_IN_ONE_BRANCH" https://github.com/confluentinc/cp-all-in-one.git "$AIO_DIR"
             - cd "$AIO_DIR/cp-all-in-one"
-            - sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-control-center-next-gen:[^[:space:]]+|image: ${DEV_C3_IMAGE}|g" docker-compose.yml
-            - sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-prometheus:[^[:space:]]+|image: ${DEV_PROM_IMAGE}|g" docker-compose.yml
-            - sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-alertmanager:[^[:space:]]+|image: ${DEV_AM_IMAGE}|g" docker-compose.yml
+            - 'sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-control-center-next-gen:[^[:space:]]+|image: ${DEV_C3_IMAGE}|g" docker-compose.yml'
+            - 'sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-prometheus:[^[:space:]]+|image: ${DEV_PROM_IMAGE}|g" docker-compose.yml'
+            - 'sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-alertmanager:[^[:space:]]+|image: ${DEV_AM_IMAGE}|g" docker-compose.yml'
             - echo "Patched image refs:" && grep -E "^[[:space:]]*image:" docker-compose.yml
             - docker compose pull control-center prometheus alertmanager
             - docker compose up -d
