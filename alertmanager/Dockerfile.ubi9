@@ -122,7 +122,7 @@ RUN mkdir -p /var/lib/confluent/control-center/alertmanager/ && \
     chown -R ${APP_UID}:${APP_GID} /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center
 USER ${APP_UID}
 
-VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
+VOLUME     [ "/var/lib/confluent/control-center/alertmanager" ]
 ENTRYPOINT [ "alertmanager-start" ]
 
 
