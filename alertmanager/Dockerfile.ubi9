@@ -19,7 +19,7 @@ ARG APP_GID=1000
 ARG UBI9_VERSION
 ARG UBI_MICRO_VERSION
 
-FROM registry.access.redhat.com/ubi9:${UBI9_VERSION} as builder
+FROM registry.access.redhat.com/ubi9:${UBI9_VERSION} AS builder
 
 ARG PROJECT_VERSION
 ARG ARTIFACT_ID
@@ -37,14 +37,14 @@ ARG CONFLUENT_PLATFORM_LABEL
 USER root
 
 RUN echo "===> Installing ${COMPONENT}..." \
-    && rpm --import ${CONFLUENT_PACKAGES_REPO}/archive.key \
+    && rpm --import "${CONFLUENT_PACKAGES_REPO}/archive.key" \
     && printf "[Confluent] \n\
 name=Confluent repository \n\
 baseurl=${CONFLUENT_PACKAGES_REPO}/ \n\
 gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
-    && dnf install -y --installroot=/microdir --releasever=9 confluent-${COMPONENT}-${C3_VERSION} ca-certificates \
+    && dnf install -y --installroot=/microdir --releasever=9 "confluent-${COMPONENT}-${C3_VERSION}" ca-certificates \
     && echo "===> Creating appuser..." \
     && useradd --no-log-init --create-home --shell /bin/bash appuser \
     && echo "===> Cleaning up ..."  \
@@ -108,7 +108,7 @@ WORKDIR /usr/bin
 RUN echo "appuser:x:${APP_UID}:${APP_GID}::/home/appuser:/bin/sh" >> /etc/passwd && \
     echo "appuser:x:${APP_GID}:" >> /etc/group && \
     mkdir -p /home/appuser && \
-    chown ${APP_UID}:${APP_GID} /home/appuser
+    chown "${APP_UID}:${APP_GID}" /home/appuser
 
 
 ## Creating the default log directory and data directory utilized by the script to ensure that Alertmanager
@@ -118,7 +118,7 @@ RUN echo "appuser:x:${APP_UID}:${APP_GID}::/home/appuser:/bin/sh" >> /etc/passwd
 ## Security Practice: Adheres to the principle of least privilege.
 RUN mkdir -p /var/lib/confluent/control-center/alertmanager/ && \
     mkdir -p /var/log/confluent/control-center && \
-    chown -R ${APP_UID}:${APP_GID} /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center
+    chown -R "${APP_UID}:${APP_GID}" /etc/confluent-control-center /var/lib/confluent/control-center/alertmanager/ /var/log/confluent/control-center
 USER ${APP_UID}
 
 VOLUME     [ "/var/lib/confluent/control-center/alertmanager" ]
