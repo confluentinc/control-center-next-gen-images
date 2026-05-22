@@ -13,10 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG UBI_MINIMAL_VERSION
+ARG APP_UID=1000
+ARG APP_GID=1000
+
+ARG UBI9_VERSION
 ARG UBI_MICRO_VERSION
 
-FROM registry.access.redhat.com/ubi9-minimal:${UBI_MINIMAL_VERSION} as builder
+FROM registry.access.redhat.com/ubi9:${UBI9_VERSION} as builder
 
 ARG PROJECT_VERSION
 ARG ARTIFACT_ID
@@ -42,27 +45,31 @@ baseurl=${CONFLUENT_PACKAGES_REPO}/ \n\
 gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
-    && microdnf install -y confluent-${COMPONENT}-${C3_VERSION} \
-    && microdnf install -y ca-certificates \
+    && dnf install -y --installroot=/microdir --releasever=9 confluent-${COMPONENT}-${C3_VERSION} ca-certificates \
     && echo "===> Creating appuser..." \
     && useradd --no-log-init --create-home --shell /bin/bash appuser \
     && echo "===> Cleaning up ..."  \
-    && microdnf clean all \
+    && dnf --installroot=/microdir clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
     && echo "===> Setting up ${COMPONENT} dirs" \
     && mkdir -p "${CONTROL_CENTER_DATA_DIR}" \
     && chown appuser:root -R "${CONTROL_CENTER_DATA_DIR}" \
-    && chown appuser:root -R "${CONTROL_CENTER_CONFIG_DIR}" \
-    && chmod -R ug+w "${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}"
+    && chown appuser:root -R "/microdir${CONTROL_CENTER_CONFIG_DIR}" \
+    && chmod -R ug+w "/microdir${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}"
 
 FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MICRO_VERSION}
 WORKDIR /app
 USER root
 
+ARG APP_UID
+ARG APP_GID
 ARG ARCH
 ARG PROJECT_VERSION
 ARG ARTIFACT_ID
 ARG GIT_COMMIT
+
+ENV APP_UID=${APP_UID}
+ENV APP_GID=${APP_GID}
 
 # Update package list and install essential packages
 
@@ -83,12 +90,12 @@ RUN mkdir -p /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus &&
     mkdir -p /etc/confluent-control-center
 
 
-COPY --from=builder /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/ /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/
-COPY --from=builder /etc/confluent-control-center/ /etc/confluent-control-center/
-COPY --from=builder /usr/bin/prometheus-start /usr/bin/prometheus-start
-COPY --from=builder /usr/bin/prometheus-stop /usr/bin/prometheus-stop
-COPY --from=builder /etc/pki/ca-trust /etc/pki/ca-trust
-COPY --from=builder /etc/ssl/certs /etc/ssl/certs
+COPY --from=builder /microdir/usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/ /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/
+COPY --from=builder /microdir/etc/confluent-control-center/ /etc/confluent-control-center/
+COPY --from=builder /microdir/usr/bin/prometheus-start /usr/bin/prometheus-start
+COPY --from=builder /microdir/usr/bin/prometheus-stop /usr/bin/prometheus-stop
+COPY --from=builder /microdir/etc/pki/ca-trust /etc/pki/ca-trust
+COPY --from=builder /microdir/etc/ssl/certs /etc/ssl/certs
 
 EXPOSE 9090
 
@@ -99,9 +106,10 @@ RUN chmod +x /usr/libexec/confluent-control-center/linux_${ARCH#.}/prometheus/pr
 WORKDIR /usr/bin
 
 
-RUN echo "appuser:x:1000:1000::/home/appuser:/bin/sh" >> /etc/passwd && \
+RUN echo "appuser:x:${APP_UID}:${APP_GID}::/home/appuser:/bin/sh" >> /etc/passwd && \
+    echo "appuser:x:${APP_GID}:" >> /etc/group && \
     mkdir -p /home/appuser && \
-    chown 1000:1000 /home/appuser
+    chown ${APP_UID}:${APP_GID} /home/appuser
 
 ENV EXE_PATH="/usr/libexec/confluent-control-center"
 
@@ -112,9 +120,9 @@ ENV EXE_PATH="/usr/libexec/confluent-control-center"
 ## Security Practice: Adheres to the principle of least privilege.
 RUN mkdir -p /var/lib/confluent/control-center/prometheus/data && \
     mkdir -p /var/log/confluent/control-center && \
-    chown -R 1000:1000 /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data /var/log/confluent/control-center
+    chown -R ${APP_UID}:${APP_GID} /etc/confluent-control-center /var/lib/confluent/control-center/prometheus/data /var/log/confluent/control-center
 
-USER appuser
+USER ${APP_UID}
 
 VOLUME     [ "/var/lib/confluent/control-center/prometheus/data" ]
 ENTRYPOINT ["prometheus-start"]
