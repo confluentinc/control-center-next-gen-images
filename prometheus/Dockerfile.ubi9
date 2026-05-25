@@ -46,15 +46,13 @@ gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
     && dnf install -y --installroot=/microdir --releasever=9 "confluent-${COMPONENT}-${C3_VERSION}" ca-certificates \
-    && echo "===> Creating appuser..." \
-    && useradd --no-log-init --create-home --shell /bin/bash appuser \
     && echo "===> Cleaning up ..."  \
     && dnf --installroot=/microdir clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
     && echo "===> Setting up ${COMPONENT} dirs" \
     && mkdir -p "${CONTROL_CENTER_DATA_DIR}" \
-    && chown appuser:root -R "${CONTROL_CENTER_DATA_DIR}" \
-    && chown appuser:root -R "/microdir${CONTROL_CENTER_CONFIG_DIR}" \
+    && chown "${APP_UID}:0" -R "${CONTROL_CENTER_DATA_DIR}" \
+    && chown "${APP_UID}:0" -R "/microdir${CONTROL_CENTER_CONFIG_DIR}" \
     && chmod -R ug+w "/microdir${CONTROL_CENTER_CONFIG_DIR}" "${CONTROL_CENTER_DATA_DIR}"
 
 FROM registry.access.redhat.com/ubi9/ubi-micro:${UBI_MICRO_VERSION}
