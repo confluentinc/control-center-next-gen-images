@@ -52,6 +52,31 @@ resolve_branch() {
   fi
 }
 
+# Patch an image ref in docker-compose.yml from the upstream public repo to
+# the PR's dev ECR URL. Fails loudly (exit 1) if either:
+#   - the expected upstream image ref isn't present in the compose file
+#     (cp-all-in-one upstream may have renamed/removed the service)
+#   - the substitution doesn't land (the regex matched something we didn't
+#     expect, or sed silently no-op'd)
+# Without these asserts, a non-matching sed would silently leave the
+# upstream image in place and the smoke test would falsely pass against
+# images this PR didn't build.
+patch_image() {
+  local image_repo="$1"          # e.g. "confluentinc/cp-enterprise-prometheus"
+  local replacement_url="$2"     # full dev ECR URL with tag
+
+  if ! grep -qE "^[[:space:]]*image:[[:space:]]*${image_repo}:" docker-compose.yml; then
+    echo "ERROR: docker-compose.yml has no image ref for '${image_repo}'." >&2
+    echo "       cp-all-in-one upstream may have renamed or removed this service." >&2
+    exit 1
+  fi
+  sed -i -E "s|image:[[:space:]]*${image_repo}:[^[:space:]]+|image: ${replacement_url}|g" docker-compose.yml
+  if ! grep -qF "${replacement_url}" docker-compose.yml; then
+    echo "ERROR: sed substitution for '${image_repo}' did not land in docker-compose.yml." >&2
+    exit 1
+  fi
+}
+
 cmd_up() {
   local repo_root="$PWD"
   local cp_version branch
@@ -77,9 +102,9 @@ cmd_up() {
   git clone --depth 1 -b "$branch" "$CP_ALL_IN_ONE_REPO" "$AIO_DIR"
   cd "$AIO_COMPOSE_DIR"
 
-  sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-control-center-next-gen:[^[:space:]]+|image: ${dev_c3}|g" docker-compose.yml
-  sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-prometheus:[^[:space:]]+|image: ${dev_prom}|g" docker-compose.yml
-  sed -i -E "s|image:[[:space:]]*confluentinc/cp-enterprise-alertmanager:[^[:space:]]+|image: ${dev_am}|g" docker-compose.yml
+  patch_image "confluentinc/cp-enterprise-control-center-next-gen" "$dev_c3"
+  patch_image "confluentinc/cp-enterprise-prometheus"               "$dev_prom"
+  patch_image "confluentinc/cp-enterprise-alertmanager"             "$dev_am"
 
   echo "Patched image refs:"
   grep -E "^[[:space:]]*image:" docker-compose.yml
