@@ -36,7 +36,10 @@ derive_cp_version() {
 }
 
 # Resolve a cp-all-in-one branch for a given CP version.
-# Preference: "<cp>-post" > "<cp major.minor>.x" > "master".
+# Preference: "<cp>-post" (released-patch pin) > "<cp major.minor>.x" (active-dev).
+# If neither exists, fails loudly (exit 1) rather than silently testing against
+# cp-all-in-one master — testing C3 images against a non-matching CP version
+# would give a misleading verification signal.
 resolve_branch() {
   local cp_version="$1"
   local cp_post="${cp_version}-post"
@@ -48,7 +51,10 @@ resolve_branch() {
   elif git ls-remote --exit-code --heads "$CP_ALL_IN_ONE_REPO" "$cp_x" >/dev/null 2>&1; then
     echo "$cp_x"
   else
-    echo "master"
+    echo "ERROR: Neither '$cp_post' nor '$cp_x' exists on $CP_ALL_IN_ONE_REPO." >&2
+    echo "       Coordinate with cp-all-in-one maintainers to create a branch" >&2
+    echo "       matching CP $cp_version before this PR can be verified." >&2
+    return 1
   fi
 }
 
@@ -86,7 +92,11 @@ cmd_up() {
     exit 1
   fi
 
-  branch=$(resolve_branch "$cp_version")
+  # `set -e` doesn't propagate command-substitution failure into a bare assignment,
+  # so we use `if !` to explicitly catch a non-zero exit from resolve_branch.
+  if ! branch=$(resolve_branch "$cp_version"); then
+    exit 1
+  fi
   echo "Using cp-all-in-one branch: $branch (CP_VERSION=$cp_version, from pom.xml parent.version)"
 
   local arch_tag="-ubi9${AMD_ARCH}"
