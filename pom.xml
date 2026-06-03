@@ -95,12 +95,11 @@
                                     <APP_UID>${app.uid}</APP_UID>
                                     <APP_GID>${app.gid}</APP_GID>
                                     <UBI9_VERSION>${ubi9.image.version}</UBI9_VERSION>
-                                    <UBI_MINIMAL_VERSION>${ubi9-minimal.image.version}</UBI_MINIMAL_VERSION>
                                     <UBI_MICRO_VERSION>${ubi9-micro.image.version}</UBI_MICRO_VERSION>
                                     <ARCH>${arch.type}</ARCH>
                                     <C3_VERSION>${C3_VERSION}</C3_VERSION>
                                     <GOLANG_VERSION>${golang.image.version}</GOLANG_VERSION>
-                                    <TEMURIN_JDK_VERSION>-${ubi9-minimal.temurin-25-jdk.version}</TEMURIN_JDK_VERSION>
+                                    <TEMURIN_JDK_VERSION>-${ubi9.temurin-25-jdk.version}</TEMURIN_JDK_VERSION>
                                     <CP_DOCKER_UTILS_VERSION>${git-repo.cp-docker-utils.tag}</CP_DOCKER_UTILS_VERSION>
                                 </args>
                             </build>
@@ -159,11 +158,10 @@
 
         <!-- Base Image Versions -->
         <ubi9.image.version>9.7-1771346757</ubi9.image.version>
-        <ubi9-minimal.image.version>9.8-1779809423</ubi9-minimal.image.version>
         <ubi9-micro.image.version>9.8-1779858820</ubi9-micro.image.version>
 
         <!-- OS Package Versions -->
-        <ubi9-minimal.temurin-25-jdk.version>25.0.3.0.0.9-0</ubi9-minimal.temurin-25-jdk.version>
+        <ubi9.temurin-25-jdk.version>25.0.3.0.0.9-0</ubi9.temurin-25-jdk.version>
 
         <!-- GitHub Repository Tags -->
         <git-repo.cp-docker-utils.tag>v1.0.12</git-repo.cp-docker-utils.tag>

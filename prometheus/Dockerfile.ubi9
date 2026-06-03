@@ -45,7 +45,7 @@ baseurl=${CONFLUENT_PACKAGES_REPO}/ \n\
 gpgcheck=1 \n\
 gpgkey=${CONFLUENT_PACKAGES_REPO}/archive.key \n\
 enabled=1 " > /etc/yum.repos.d/confluent.repo \
-    && dnf install -y --installroot=/microdir --releasever=9 "confluent-${COMPONENT}-${C3_VERSION}" ca-certificates \
+    && dnf install -y --installroot=/microdir --releasever=9 --setopt=install_weak_deps=False --nodocs "confluent-${COMPONENT}-${C3_VERSION}" ca-certificates \
     && echo "===> Cleaning up ..."  \
     && dnf --installroot=/microdir clean all \
     && rm -rf /tmp/* /etc/yum.repos.d/confluent.repo \
