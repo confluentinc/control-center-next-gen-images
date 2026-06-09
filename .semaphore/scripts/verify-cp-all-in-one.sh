@@ -6,10 +6,12 @@
 # Addresses MMA-17737 / INC-6655 by automating the manual screenshot step in
 # .github/PULL_REQUEST_TEMPLATE.md.
 #
-# This script ALWAYS exits 0 from the top-level dispatcher so that a smoke-test
-# failure cannot trip Semaphore's fail_fast and cancel the parallel
-# Deploy/Manifest/Publish blocks. Failures are surfaced via loud banner output
-# in the job log instead.
+# Real failures exit 1 — the pipeline shows FAILED so developers see it. The
+# Semaphore block is structured to depend on the last publish block, so by the
+# time we run there is nothing in-flight for fail_fast to cancel.
+#
+# A genuinely "nothing to verify yet" state (no matching cp-all-in-one branch,
+# or platform images not yet in internal ECR) exits 0 with a loud SKIP banner.
 #
 # Usage:
 #   verify-cp-all-in-one.sh up    # clone, sed-patch, compose up, poll healthchecks
@@ -115,16 +117,6 @@ skip_banner() {
   echo "SKIP: cp-all-in-one verification cannot run yet"
   echo "  reason: $reason"
   echo "  this is non-blocking: image publish/promote continues normally"
-  echo "================================================================================"
-}
-
-# Print a loud FAILED banner. Used when verification ran but failed.
-failure_banner() {
-  echo ""
-  echo "================================================================================"
-  echo "cp-all-in-one VERIFICATION FAILED"
-  echo "  - this signal is non-blocking: image publish/promote continues normally"
-  echo "  - investigate logs above; do not merge if verification was the intent"
   echo "================================================================================"
 }
 
@@ -236,22 +228,8 @@ cmd_down() {
   docker compose down -v || true
 }
 
-# Top-level dispatcher.
-#
-# `up` runs cmd_up in a subshell so that any internal `exit 1` (from
-# patch_image asserts, healthcheck timeout, etc.) terminates only the subshell
-# and lets us print a loud FAILED banner and exit 0. This is intentional: a
-# verify failure must not cancel the parallel Deploy/Manifest/Publish blocks
-# via fail_fast.
 case "${1:-}" in
-  up)
-    if ( cmd_up ); then
-      :
-    else
-      failure_banner
-    fi
-    exit 0
-    ;;
+  up) cmd_up ;;
   down) cmd_down ;;
   *) echo "usage: $0 up|down" >&2; exit 2 ;;
 esac
