@@ -178,15 +178,37 @@ blocks:
   # prometheus, and alertmanager to respond healthy. Addresses MMA-17737 / INC-6655.
   # Logic lives in .semaphore/scripts/verify-cp-all-in-one.sh so it's easy to
   # debug, lint, and run locally outside of CI.
+  #
+  # Depends on the last block in the publish chain so that a verify failure
+  # cannot cause fail_fast to cancel any in-flight Deploy/Manifest/Publish
+  # block — they're all already done by the time verify runs. A real verify
+  # failure still surfaces as a failed pipeline (developer-visible) without
+  # blocking image publish/promote.
   - name: Verify cp-all-in-one Docker Compose
-    dependencies: ["Build, Test, & Scan AMD"]
+    dependencies: ["Push docker images tags summary to artifacts"]
     run:
       when: "pull_request =~ '.*'"
     task:
       jobs:
         - name: cp-all-in-one docker compose smoke test
           commands:
-            - .semaphore/scripts/verify-cp-all-in-one.sh up
+            # The script uses exit code 88 to signal "skip" — no matching
+            # cp-all-in-one branch, or platform images not in ECR yet.
+            # Translate that into SEMAPHORE_JOB_RESULT=stopped + return 130
+            # so the block shows as Stopped (not Passed) in the UI — avoids
+            # a false-positive green. Pattern from confluentinc/packaging.
+            # Other exit codes (0 = passed, 1 = failed) pass through normally.
+            #
+            # `|| rc=$?` captures the script's non-zero exit without letting
+            # the shell's set -e terminate the wrapper before we can dispatch.
+            - |
+              rc=0
+              .semaphore/scripts/verify-cp-all-in-one.sh up || rc=$?
+              if [ "$rc" -eq 88 ]; then
+                export SEMAPHORE_JOB_RESULT=stopped
+                return 130
+              fi
+              exit "$rc"
       epilogue:
         always:
           commands:
