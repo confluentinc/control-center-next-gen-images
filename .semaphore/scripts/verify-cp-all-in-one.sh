@@ -6,12 +6,16 @@
 # Addresses MMA-17737 / INC-6655 by automating the manual screenshot step in
 # .github/PULL_REQUEST_TEMPLATE.md.
 #
-# Real failures exit 1 — the pipeline shows FAILED so developers see it. The
-# Semaphore block is structured to depend on the last publish block, so by the
-# time we run there is nothing in-flight for fail_fast to cancel.
+# Exit code contract (the semaphore.yml wrapper translates these):
+#   0   verification ran and passed
+#   1   verification ran and failed (real regression — pipeline shows FAILED)
+#   88  "nothing to verify yet" — no matching cp-all-in-one branch, or
+#       platform images not in internal ECR. The wrapper turns this into
+#       SEMAPHORE_JOB_RESULT=stopped + return 130 so the Semaphore UI shows
+#       the block as Stopped (not Passed — avoids false-positive green).
 #
-# A genuinely "nothing to verify yet" state (no matching cp-all-in-one branch,
-# or platform images not yet in internal ECR) exits 0 with a loud SKIP banner.
+# The Semaphore block is structured to depend on the last publish block, so
+# by the time we run there is nothing in-flight for fail_fast to cancel.
 #
 # Usage:
 #   verify-cp-all-in-one.sh up    # clone, sed-patch, compose up, poll healthchecks
@@ -133,7 +137,10 @@ cmd_up() {
   branch=$(resolve_branch "$cp_version")
   if [ -z "$branch" ]; then
     skip_banner "no -post or ${cp_line}.x cp-all-in-one branch exists for CP $cp_version yet (likely too early in the CP release cycle)"
-    return 0
+    # Sentinel exit code 88 signals "skip" to the wrapper in semaphore.yml,
+    # which translates it into SEMAPHORE_JOB_RESULT=stopped so the block
+    # shows as Stopped (not Passed) in the UI — no false-positive green.
+    exit 88
   fi
 
   # For .x dev branches, cp-all-in-one's compose pins CP platform services to
@@ -147,7 +154,7 @@ cmd_up() {
       # use `if !` to catch a non-zero exit from ecr_has_cp_line_images.
       if ! missing_imgs=$(ecr_has_cp_line_images "$cp_line"); then
         skip_banner "cp-all-in-one '${branch}' exists but these ${cp_line}.x-latest-ubi9 images aren't in ${DOCKER_PROD_REGISTRY} yet: ${missing_imgs}"
-        return 0
+        exit 88
       fi
       ;;
   esac

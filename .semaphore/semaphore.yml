@@ -192,7 +192,23 @@ blocks:
       jobs:
         - name: cp-all-in-one docker compose smoke test
           commands:
-            - .semaphore/scripts/verify-cp-all-in-one.sh up
+            # The script uses exit code 88 to signal "skip" — no matching
+            # cp-all-in-one branch, or platform images not in ECR yet.
+            # Translate that into SEMAPHORE_JOB_RESULT=stopped + return 130
+            # so the block shows as Stopped (not Passed) in the UI — avoids
+            # a false-positive green. Pattern from confluentinc/packaging.
+            # Other exit codes (0 = passed, 1 = failed) pass through normally.
+            #
+            # `|| rc=$?` captures the script's non-zero exit without letting
+            # the shell's set -e terminate the wrapper before we can dispatch.
+            - |
+              rc=0
+              .semaphore/scripts/verify-cp-all-in-one.sh up || rc=$?
+              if [ "$rc" -eq 88 ]; then
+                export SEMAPHORE_JOB_RESULT=stopped
+                return 130
+              fi
+              exit "$rc"
       epilogue:
         always:
           commands:
