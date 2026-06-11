@@ -197,7 +197,13 @@ blocks:
             # Translate that into SEMAPHORE_JOB_RESULT=stopped + return 130
             # so the block shows as Stopped (not Passed) in the UI — avoids
             # a false-positive green. Pattern from confluentinc/packaging.
-            # Other exit codes (0 = passed, 1 = failed) pass through normally.
+            # Other exit codes (0 = passed, 1 = failed) pass through via
+            # `return "$rc"`.
+            #
+            # IMPORTANT: use `return`, not `exit`. Semaphore sources these
+            # `- |` blocks into a shared shell session; `exit` terminates
+            # that session and Semaphore reports the step as exit 1
+            # regardless of what value was passed.
             #
             # `|| rc=$?` captures the script's non-zero exit without letting
             # the shell's set -e terminate the wrapper before we can dispatch.
@@ -208,7 +214,7 @@ blocks:
                 export SEMAPHORE_JOB_RESULT=stopped
                 return 130
               fi
-              exit "$rc"
+              return "$rc"
       epilogue:
         always:
           commands:
