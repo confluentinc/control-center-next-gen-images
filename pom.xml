@@ -157,14 +157,14 @@
         <app.gid>1000</app.gid>
 
         <!-- Base Image Versions -->
-        <ubi9.image.version>9.8-1780554162</ubi9.image.version>
+        <ubi9.image.version>9.8-1780900431</ubi9.image.version>
         <ubi9-micro.image.version>9.8-1779858820</ubi9-micro.image.version>
 
         <!-- OS Package Versions -->
         <ubi9.temurin-25-jdk.version>25.0.3.0.0.9-0</ubi9.temurin-25-jdk.version>
 
         <!-- GitHub Repository Tags -->
-        <git-repo.cp-docker-utils.tag>v1.0.13</git-repo.cp-docker-utils.tag>
+        <git-repo.cp-docker-utils.tag>v1.0.16</git-repo.cp-docker-utils.tag>
 
         <!-- Docker Hub Images -->
         <golang.image.version>1.26.4-trixie</golang.image.version>
