@@ -173,13 +173,8 @@ blocks:
             - . publish-test-results
             - artifact push workflow target/test-results
             - artifact push workflow target --destination target-S390X
-  # Automates the manual verification described in .github/PULL_REQUEST_TEMPLATE.md:
-  # boots cp-all-in-one with the PR-built dev images and waits for control-center,
-  # prometheus, and alertmanager to respond healthy. Addresses MMA-17737 / INC-6655.
-  # Logic lives in .semaphore/scripts/verify-cp-all-in-one.sh so it's easy to
-  # debug, lint, and run locally outside of CI.
   - name: Verify cp-all-in-one Docker Compose
-    dependencies: ["Build, Test, & Scan AMD"]
+    dependencies: ["Push docker images tags summary to artifacts"]
     run:
       when: "pull_request =~ '.*'"
     task:

@@ -1,20 +1,11 @@
 #!/usr/bin/env bash
 #
-# Smoke-test the PR-built docker images by booting cp-all-in-one with them and
+# Smoke-test PR-built docker images by booting cp-all-in-one with them and
 # polling control-center, prometheus, and alertmanager for HTTP 200.
 #
-# Addresses MMA-17737 / INC-6655 by automating the manual screenshot step in
-# .github/PULL_REQUEST_TEMPLATE.md.
+# Usage: verify-cp-all-in-one.sh up | down
 #
-# Usage:
-#   verify-cp-all-in-one.sh up    # clone, sed-patch, compose up, poll healthchecks
-#   verify-cp-all-in-one.sh down  # tear down (run in always-epilogue) — dumps
-#                                 # ps + per-service logs, then `compose down -v`.
-#
-# Required env vars (exported by the global Semaphore prologue):
-#   DOCKER_DEV_REGISTRY  e.g. 519856050701.dkr.ecr.us-west-2.amazonaws.com/docker/dev/
-#   DOCKER_DEV_TAG       e.g. dev-2.3.x-327c2d06
-#   AMD_ARCH             e.g. .amd64
+# Required env: DOCKER_DEV_REGISTRY, DOCKER_DEV_TAG, AMD_ARCH
 
 set -euo pipefail
 
@@ -24,8 +15,6 @@ CP_ALL_IN_ONE_REPO=https://github.com/confluentinc/cp-all-in-one.git
 HEALTH_TIMEOUT_TRIES=60
 HEALTH_TIMEOUT_SLEEP=10
 
-# Derive the CP version from this repo's pom.xml parent <version>.
-# Example: "[8.0.4-0, 8.0.5-0)"  ->  "8.0.4"
 derive_cp_version() {
   local pom="$1"
   local parent_version
@@ -35,45 +24,30 @@ derive_cp_version() {
   echo "$parent_version" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1
 }
 
-# Resolve a cp-all-in-one branch for a given CP version.
-# Preference: "<cp>-post" (released-patch pin) > "<cp major.minor>.x" (active-dev).
-# If neither exists, fails loudly (exit 1) rather than silently testing against
-# cp-all-in-one master — testing C3 images against a non-matching CP version
-# would give a misleading verification signal.
+# Resolve to the highest <X.Y.Z>-post branch <= the target CP version. The
+# released -post branches pin real published images; cp-all-in-one's master
+# and .x branches reference unpublished <line>.x-latest tags and don't work,
+# so we always fall back to the closest released line. Echoes empty if none.
 resolve_branch() {
-  local cp_version="$1"
-  local cp_post="${cp_version}-post"
-  local cp_x
-  cp_x="$(echo "$cp_version" | grep -oE '^[0-9]+\.[0-9]+').x"
-
-  if git ls-remote --exit-code --heads "$CP_ALL_IN_ONE_REPO" "$cp_post" >/dev/null 2>&1; then
-    echo "$cp_post"
-  elif git ls-remote --exit-code --heads "$CP_ALL_IN_ONE_REPO" "$cp_x" >/dev/null 2>&1; then
-    echo "$cp_x"
-  else
-    echo "ERROR: Neither '$cp_post' nor '$cp_x' exists on $CP_ALL_IN_ONE_REPO." >&2
-    echo "       Coordinate with cp-all-in-one maintainers to create a branch" >&2
-    echo "       matching CP $cp_version before this PR can be verified." >&2
-    return 1
-  fi
+  local target="$1" best="" v
+  while read -r v; do
+    [ -z "$v" ] && continue
+    if [ "$(printf '%s\n%s\n' "$v" "$target" | sort -V | head -1)" = "$v" ]; then
+      best="$v"
+    fi
+  done < <(git ls-remote --heads "$CP_ALL_IN_ONE_REPO" \
+    | sed -nE 's#.*refs/heads/([0-9]+\.[0-9]+\.[0-9]+)-post$#\1#p' | sort -V)
+  [ -n "$best" ] && echo "${best}-post"
 }
 
-# Patch an image ref in docker-compose.yml from the upstream public repo to
-# the PR's dev ECR URL. Fails loudly (exit 1) if either:
-#   - the expected upstream image ref isn't present in the compose file
-#     (cp-all-in-one upstream may have renamed/removed the service)
-#   - the substitution doesn't land (the regex matched something we didn't
-#     expect, or sed silently no-op'd)
-# Without these asserts, a non-matching sed would silently leave the
-# upstream image in place and the smoke test would falsely pass against
-# images this PR didn't build.
+# Asserts catch silent zero-match seds — a no-op sed would leave the public
+# image in place and falsely pass the test.
 patch_image() {
-  local image_repo="$1"          # e.g. "confluentinc/cp-enterprise-prometheus"
-  local replacement_url="$2"     # full dev ECR URL with tag
+  local image_repo="$1"
+  local replacement_url="$2"
 
   if ! grep -qE "^[[:space:]]*image:[[:space:]]*${image_repo}:" docker-compose.yml; then
     echo "ERROR: docker-compose.yml has no image ref for '${image_repo}'." >&2
-    echo "       cp-all-in-one upstream may have renamed or removed this service." >&2
     exit 1
   fi
   sed -i -E "s|image:[[:space:]]*${image_repo}:[^[:space:]]+|image: ${replacement_url}|g" docker-compose.yml
@@ -92,12 +66,17 @@ cmd_up() {
     exit 1
   fi
 
-  # `set -e` doesn't propagate command-substitution failure into a bare assignment,
-  # so we use `if !` to explicitly catch a non-zero exit from resolve_branch.
-  if ! branch=$(resolve_branch "$cp_version"); then
+  branch=$(resolve_branch "$cp_version")
+  if [ -z "$branch" ]; then
+    echo "ERROR: no <X.Y.Z>-post branch <= CP $cp_version found on $CP_ALL_IN_ONE_REPO"
     exit 1
   fi
-  echo "Using cp-all-in-one branch: $branch (CP_VERSION=$cp_version, from pom.xml parent.version)"
+  if [ "$branch" = "${cp_version}-post" ]; then
+    echo "Using cp-all-in-one branch: $branch (exact match for CP $cp_version, from pom.xml parent.version)"
+  else
+    echo "WARNING: cp-all-in-one has no ${cp_version}-post branch for CP $cp_version (from pom.xml parent.version);"
+    echo "         falling back to closest released branch: $branch"
+  fi
 
   local arch_tag="-ubi9${AMD_ARCH}"
   local dev_c3="${DOCKER_DEV_REGISTRY}confluentinc/cp-enterprise-control-center-next-gen:${DOCKER_DEV_TAG}${arch_tag}"
