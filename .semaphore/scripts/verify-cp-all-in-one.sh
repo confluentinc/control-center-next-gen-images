@@ -71,7 +71,12 @@ cmd_up() {
     echo "ERROR: no <X.Y.Z>-post branch <= CP $cp_version found on $CP_ALL_IN_ONE_REPO"
     exit 1
   fi
-  echo "Using cp-all-in-one branch: $branch (target CP $cp_version, from pom.xml parent.version)"
+  if [ "$branch" = "${cp_version}-post" ]; then
+    echo "Using cp-all-in-one branch: $branch (exact match for CP $cp_version, from pom.xml parent.version)"
+  else
+    echo "WARNING: cp-all-in-one has no ${cp_version}-post branch for CP $cp_version (from pom.xml parent.version);"
+    echo "         falling back to closest released branch: $branch"
+  fi
 
   local arch_tag="-ubi9${AMD_ARCH}"
   local dev_c3="${DOCKER_DEV_REGISTRY}confluentinc/cp-enterprise-control-center-next-gen:${DOCKER_DEV_TAG}${arch_tag}"
