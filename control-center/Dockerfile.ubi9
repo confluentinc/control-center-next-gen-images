@@ -62,6 +62,7 @@ RUN echo "===> Installing Temurin JRE and Control Center Next Gen..." \
        "temurin-25-jre${TEMURIN_JDK_VERSION}" \
        "confluent-control-center-next-gen-${C3_VERSION}" \
        shadow-utils \
+       curl-minimal \
     && echo "===> Removing unused services (Prometheus, Alertmanager)..." \
     && rm -f /microdir/lib/systemd/system/prometheus.service \
     && rm -rf /microdir/usr/libexec/confluent-control-center/linux_*/prometheus \
@@ -92,6 +93,12 @@ ARG GIT_COMMIT
 ARG BUILD_NUMBER=-1
 ARG C3_VERSION
 ARG CONFLUENT_PLATFORM_LABEL
+
+# POC (CPBR-3841): fetched directly from GitHub Releases instead of resolved as
+# a Maven dependency. Version comes from common's jmx_prometheus_javaagent.version
+# property (POC-overridden in pom.xml), passed in via docker-maven-plugin - same
+# single source of truth as before, different fetch path.
+ARG JMX_PROMETHEUS_JAVAAGENT_VERSION
 
 ENV APP_UID=${APP_UID}
 ENV APP_GID=${APP_GID}
@@ -132,6 +139,19 @@ RUN echo "===> Setting up ${COMPONENT} dirs" \
 # Copy files from target package to cp-base-new directory for backward compatibility (some paths are hardcoded in CFK startup scripts)
 COPY --chown=${APP_UID}:${APP_GID} target/${ARTIFACT_ID}-${PROJECT_VERSION}-package/share/doc/* /usr/share/doc/cp-base-new/
 COPY --chown=${APP_UID}:${APP_GID} target/${ARTIFACT_ID}-${PROJECT_VERSION}-package/share/java/${ARTIFACT_ID}/* /usr/share/java/cp-base-new/
+
+# POC (CPBR-3841): fetch jmx_prometheus_javaagent via curl from GitHub Releases
+# instead of resolving it as a Maven dependency (removed from pom.xml on this
+# branch). Verifies against the .sha256 sidecar GitHub Releases publishes
+# per-asset - same verification approach dependency-mirrors' own mirroring
+# pipeline uses, avoids hardcoding a checksum in source that would need manual
+# upkeep too.
+RUN JAR_NAME="jmx_prometheus_javaagent-${JMX_PROMETHEUS_JAVAAGENT_VERSION}.jar" \
+    && JAR_PATH="/usr/share/java/cp-base-new/${JAR_NAME}" \
+    && JAR_URL="https://github.com/prometheus/jmx_exporter/releases/download/${JMX_PROMETHEUS_JAVAAGENT_VERSION}/${JAR_NAME}" \
+    && curl -fsSL -o "${JAR_PATH}" "${JAR_URL}" \
+    && echo "$(curl -fsSL "${JAR_URL}.sha256" | awk '{print $1}')  ${JAR_PATH}" | sha256sum -c - \
+    && chown ${APP_UID}:${APP_GID} "${JAR_PATH}"
 
 # /usr/share/java/cp-base-java is the default java classpath for ub
 # jars in cp-base-new and cp-base-java are identical, so create a symlink to avoid duplicating files

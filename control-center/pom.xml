@@ -64,12 +64,14 @@
             <version>${jolokia-jvm.version}</version>
         </dependency>
         
-        <dependency>
-            <groupId>io.prometheus.jmx</groupId>
-            <artifactId>jmx_prometheus_javaagent</artifactId>
-            <version>${jmx_prometheus_javaagent.version}</version>
-        </dependency>
-        
+        <!-- jmx_prometheus_javaagent removed as a Maven dependency for this POC — the
+             version still comes from common's jmx_prometheus_javaagent.version
+             property (single source of truth, unchanged), but it's now passed to
+             Dockerfile.ubi9 as a build arg (see root pom.xml docker-maven-plugin
+             config) and fetched via curl from GitHub Releases instead of being
+             resolved by Maven. Mirrors the common-docker CPBR-3841 POC (PRs
+             #2343/#2388). -->
+
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>disk-usage-agent</artifactId>
