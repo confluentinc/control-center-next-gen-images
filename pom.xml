@@ -52,12 +52,10 @@
                 <version>${jolokia-jvm.version}</version>
             </dependency>
             
-            <dependency>
-                <groupId>io.prometheus.jmx</groupId>
-                <artifactId>jmx_prometheus_javaagent</artifactId>
-                <version>${jmx_prometheus_javaagent.version}</version>
-            </dependency>
-            
+            <!-- jmx_prometheus_javaagent removed from dependencyManagement for this
+                 POC — fetched via curl from GitHub Releases in Dockerfile.ubi9
+                 instead of Maven resolution. See control-center/pom.xml. -->
+
             <dependency>
                 <groupId>io.confluent</groupId>
                 <artifactId>disk-usage-agent</artifactId>
@@ -101,6 +99,7 @@
                                     <GOLANG_VERSION>${golang.image.version}</GOLANG_VERSION>
                                     <TEMURIN_JDK_VERSION>-${ubi9.temurin-25-jdk.version}</TEMURIN_JDK_VERSION>
                                     <CP_DOCKER_UTILS_VERSION>${git-repo.cp-docker-utils.tag}</CP_DOCKER_UTILS_VERSION>
+                                    <JMX_PROMETHEUS_JAVAAGENT_VERSION>${jmx_prometheus_javaagent.version}</JMX_PROMETHEUS_JAVAAGENT_VERSION>
                                 </args>
                             </build>
                         </image>
@@ -111,6 +110,13 @@
     </build>
 
     <properties>
+        <!-- POC-only override: common's property is still 0.20.0 until the
+             CPBR-3841 bump merges, and 0.20.0 predates upstream's move to GitHub
+             Releases (no jar asset exists there for it - only Maven Central).
+             Overriding here purely so this POC branch's CI exercises the
+             curl-fetch path against a version with a real GitHub Release asset.
+             Remove this override once common is bumped for real. -->
+        <jmx_prometheus_javaagent.version>1.6.0</jmx_prometheus_javaagent.version>
         <component.name>control-center</component.name>
         <io.confluent.control-center-next-gen-images.version>2.7.0-0</io.confluent.control-center-next-gen-images.version>
         <!--  This is a placeholder for the architecture of the image that we will need from input
