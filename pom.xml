@@ -51,13 +51,7 @@
                 <artifactId>jolokia-jvm</artifactId>
                 <version>${jolokia-jvm.version}</version>
             </dependency>
-            
-            <dependency>
-                <groupId>io.prometheus.jmx</groupId>
-                <artifactId>jmx_prometheus_javaagent</artifactId>
-                <version>${jmx_prometheus_javaagent.version}</version>
-            </dependency>
-            
+
             <dependency>
                 <groupId>io.confluent</groupId>
                 <artifactId>disk-usage-agent</artifactId>
@@ -101,6 +95,7 @@
                                     <GOLANG_VERSION>${golang.image.version}</GOLANG_VERSION>
                                     <TEMURIN_JDK_VERSION>-${ubi9.temurin-25-jdk.version}</TEMURIN_JDK_VERSION>
                                     <CP_DOCKER_UTILS_VERSION>${git-repo.cp-docker-utils.tag}</CP_DOCKER_UTILS_VERSION>
+                                    <JMX_PROMETHEUS_JAVAAGENT_VERSION>${jmx_prometheus_javaagent.version}</JMX_PROMETHEUS_JAVAAGENT_VERSION>
                                 </args>
                             </build>
                         </image>
@@ -112,6 +107,11 @@
 
     <properties>
         <component.name>control-center</component.name>
+        <!-- TEMPORARY, do not merge: local override so this PR can build/test
+             standalone before common#1100 (0.20.0 -> 1.6.0) merges. Remove
+             once common#1100 lands so this repo goes back to inheriting the
+             version from common. -->
+        <jmx_prometheus_javaagent.version>1.6.0</jmx_prometheus_javaagent.version>
         <io.confluent.control-center-next-gen-images.version>2.7.0-0</io.confluent.control-center-next-gen-images.version>
         <!--  This is a placeholder for the architecture of the image that we will need from input
          and the input will come in mvn command from semaphore.yml file -->
