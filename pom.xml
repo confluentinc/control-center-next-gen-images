@@ -107,11 +107,6 @@
 
     <properties>
         <component.name>control-center</component.name>
-        <!-- TEMPORARY, do not merge: local override so this PR can build/test
-             standalone before common#1100 (0.20.0 -> 1.6.0) merges. Remove
-             once common#1100 lands so this repo goes back to inheriting the
-             version from common. -->
-        <jmx_prometheus_javaagent.version>1.6.0</jmx_prometheus_javaagent.version>
         <io.confluent.control-center-next-gen-images.version>2.7.0-0</io.confluent.control-center-next-gen-images.version>
         <!--  This is a placeholder for the architecture of the image that we will need from input
          and the input will come in mvn command from semaphore.yml file -->
