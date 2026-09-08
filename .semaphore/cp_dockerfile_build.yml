@@ -64,15 +64,6 @@ global_job_config:
         if [[ -n "$CONFLUENT_DEB_VERSION" ]]; then PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DCONFLUENT_DEB_VERSION=$CONFLUENT_DEB_VERSION"; fi
         if [[ -n "$ALLOW_UNSIGNED" ]]; then PACKAGING_BUILD_ARGS="$PACKAGING_BUILD_ARGS -DALLOW_UNSIGNED=$ALLOW_UNSIGNED"; fi
       - >-
-        if [[ $IS_RELEASE && $PACKAGING_BUILD_NUMBER ]]; then
-          if [[ $IS_RC ]]; then
-              export MAVEN_PACKAGES_URL="https://s3.us-west-2.amazonaws.com/staging-confluent-packages-maven-654654529379-us-west-2/v$BRANCH_NAME/maven"
-              if [[ $PACKAGES_MAVEN_URL ]]; then
-                  export MAVEN_PACKAGES_URL=$PACKAGES_MAVEN_URL
-              fi
-          fi
-        fi
-      - >-
         set -o pipefail;
         gh api repos/confluentinc/depot/contents/python/cp_devtools/templates/template_resources/maven/maven_semaphore_independent_release_packaging_settings.xml | jq -r '.content' | base64 -d > template-settings.xml || { echo "Failed to fetch depot Maven settings template" >&2; exit 1; };
         set +o pipefail;
