@@ -43,7 +43,7 @@
             <dependency>
                 <groupId>io.confluent</groupId>
                 <artifactId>utility-belt</artifactId>
-                <version>8.3.2</version>
+                <version>8.4.0</version>
             </dependency>
 
             <dependency>
@@ -147,7 +147,7 @@
         -->
 
         <!-- Base Image Versions -->
-        <ubi9-minimal.image.version>9.8-1789639776</ubi9-minimal.image.version>
+        <ubi9-minimal.image.version>9.8-1790074235</ubi9-minimal.image.version>
         <ubi9-micro.image.version>9.8-1789345812</ubi9-micro.image.version>
 
         <!-- OS Package Versions -->
