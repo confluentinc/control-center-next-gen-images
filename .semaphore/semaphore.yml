@@ -39,6 +39,8 @@ global_job_config:
       - export C3_MAJOR_MINOR=$(echo "$C3_VERSION" | cut -d. -f1,2)
       - export DEFAULT_OS_TYPE="ubi"
       - export PACKAGES_URL="https://s3-us-west-2.amazonaws.com/dev-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/$BRANCH_TAG/latest/PACKAGE_TYPE/$C3_MAJOR_MINOR"
+      # TEMPORARY, DO NOT MERGE: build from control-center-packaging#279's split packages until the s390x channel exists on master
+      - export PACKAGES_URL="https://s3-us-west-2.amazonaws.com/dev-control-center-packages-654654529379-us-west-2/confluent-control-center-next-gen/pr/PR-279/2/PACKAGE_TYPE/$C3_MAJOR_MINOR"
       - 'echo "PACKAGES_URL: ${PACKAGES_URL}"'
       - export PACKAGING_BUILD_NUMBER=$LATEST_PACKAGING_BUILD_NUMBER
       - >-
