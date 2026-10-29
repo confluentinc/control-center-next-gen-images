@@ -112,6 +112,8 @@
          and the input will come in mvn command from semaphore.yml file -->
         <arch.type>.arm64</arch.type>
         <docker.file>Dockerfile.ubi9</docker.file>
+        <!-- TEMPORARY, DO NOT MERGE: common's 1.6.0 NPEs in create-licenses-for-docker (CPBR-4090, confluentinc/common#1109) -->
+        <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
 
         <!-- ============================================================ -->
         <!-- AUTOMATED VERSION UPDATE PROPERTY NAMING CONVENTIONS         -->
