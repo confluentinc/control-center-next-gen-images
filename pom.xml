@@ -107,6 +107,10 @@
 
     <properties>
         <component.name>control-center</component.name>
+        <!-- common 8.5 moved exec-maven-plugin to 1.6.0, which makes create-licenses-for-docker fail
+             with "pluginDependencies is null" (https://github.com/mojohaus/exec-maven-plugin/issues/76).
+             Keep it on 1.5.0, as common 8.4 did, until common is fixed. -->
+        <exec-maven-plugin.version>1.5.0</exec-maven-plugin.version>
         <io.confluent.control-center-next-gen-images.version>2.8.0-0</io.confluent.control-center-next-gen-images.version>
         <!--  This is a placeholder for the architecture of the image that we will need from input
          and the input will come in mvn command from semaphore.yml file -->
