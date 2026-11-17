@@ -41,6 +41,13 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>io.confluent</groupId>
                 <artifactId>utility-belt</artifactId>
                 <version>8.4.1</version>
@@ -106,6 +113,10 @@
     </build>
 
     <properties>
+        <!-- CVE-2026-110879 (jackson-databind): the CP 8.3.3 parent pins 2.22.3 through
+             confluent-common-bom, so jackson-bom is imported at this version in
+             dependencyManagement. Remove both once the CP parent brings 2.22.4 or newer. -->
+        <jackson.version>2.22.4</jackson.version>
         <component.name>control-center</component.name>
         <io.confluent.control-center-next-gen-images.version>2.7.0-0</io.confluent.control-center-next-gen-images.version>
         <!--  This is a placeholder for the architecture of the image that we will need from input
