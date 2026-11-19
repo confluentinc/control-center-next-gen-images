@@ -156,7 +156,7 @@
         <ubi9-micro.image.version>9.9-1794478307</ubi9-micro.image.version>
 
         <!-- OS Package Versions -->
-        <ubi9.temurin-25-jdk.version>25.0.4.1.0.1-0</ubi9.temurin-25-jdk.version>
+        <ubi9.temurin-25-jdk.version>25.0.5.*</ubi9.temurin-25-jdk.version>
 
         <!-- GitHub Repository Tags -->
         <git-repo.cp-docker-utils.tag>v1.0.21</git-repo.cp-docker-utils.tag>
