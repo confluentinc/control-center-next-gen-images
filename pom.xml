@@ -116,7 +116,7 @@
         <!-- CVE-2026-110879 (jackson-databind): the CP 8.3.3 parent pins 2.22.3 through
              confluent-common-bom, so jackson-bom is imported at this version in
              dependencyManagement. Remove both once the CP parent brings 2.22.4 or newer. -->
-        <jackson.version>2.22.4</jackson.version>
+        <jackson.version>2.23.0</jackson.version>
         <component.name>control-center</component.name>
         <!-- common 8.5 moved exec-maven-plugin to 1.6.0, which makes create-licenses-for-docker fail
              with "pluginDependencies is null" (https://github.com/mojohaus/exec-maven-plugin/issues/76).
